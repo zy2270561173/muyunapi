@@ -41,7 +41,9 @@ function parseArgs() {
 }
 
 function versionToCode(v) {
-  const [a, b, c] = v.split('.').map(Number);
+  // 支持 x.y.z 和 x.y.z-suffix 两种格式
+  const base = v.split('-')[0];
+  const [a, b, c] = base.split('.').map(Number);
   return a * 10000 + b * 100 + c;
 }
 
