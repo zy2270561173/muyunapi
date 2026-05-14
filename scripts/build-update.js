@@ -20,7 +20,6 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
-const zlib = require('zlib');
 
 // ─── 工具函数 ───
 
@@ -51,23 +50,14 @@ function zipDirectory(srcDir, destFile) {
   const destDir = path.dirname(destFile);
   if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
   if (fs.existsSync(destFile)) fs.unlinkSync(destFile);
-
-  const { execSync: exec } = require('child_process');
-
-  // Windows: cd 进源目录，压缩 *（内容在 zip 根目录，不设子文件夹）
-  // Linux: 同样 cd 进源目录后执行 zip
-  const isWindows = process.platform === 'win32';
-  let cmd;
-
-  if (isWindows) {
-    cmd = `powershell -NoProfile -Command "cd '${srcDir}'; Compress-Archive -Path * -DestinationPath '${destFile}' -Force"`;
-  } else {
-    cmd = `zip -r "${destFile}" . -x "*.DS_Store"`;
-  }
-
-  exec(cmd, { stdio: 'pipe', timeout: 120000 });
-
-  // 验证文件确实生成了
+  const { execSync } = require('child_process');
+  // 原始版本：用 replace 转斜杠 + \* 通配符，确保内容在 zip 根目录
+  const srcPattern = `'${srcDir.replace(/\\/g, '/')}\\*'`;
+  const destPath = `'${destFile.replace(/\\/g, '/')}'`;
+  execSync(
+    `powershell -Command "Compress-Archive -Path ${srcPattern} -DestinationPath ${destPath} -Force"`,
+    { stdio: 'pipe', cwd: path.dirname(srcDir), timeout: 120000 }
+  );
   if (!fs.existsSync(destFile)) {
     throw new Error(`ZIP 文件生成失败: ${destFile}`);
   }
