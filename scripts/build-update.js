@@ -75,8 +75,8 @@ async function main() {
     process.exit(1);
   }
 
-  if (!/^\d+\.\d+\.\d+$/.test(version)) {
-    log('\n❌ 版本号格式错误，应为 x.y.z', 'red');
+  if (!/^\d+\.\d+\.\d+(-\w+)?$/.test(version)) {
+    log('\n❌ 版本号格式错误，应为 x.y.z 或 x.y.z-xxx', 'red');
     process.exit(1);
   }
 
