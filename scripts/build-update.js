@@ -54,19 +54,18 @@ function zipDirectory(srcDir, destFile) {
 
   const { execSync: exec } = require('child_process');
 
-  // 检测平台，使用系统原生压缩工具
+  // Windows: cd 进源目录，压缩 *（内容在 zip 根目录，不设子文件夹）
+  // Linux: 同样 cd 进源目录后执行 zip
   const isWindows = process.platform === 'win32';
   let cmd;
 
   if (isWindows) {
-    // PowerShell Compress-Archive（同步阻塞，确保完成）
-    cmd = `powershell -NoProfile -Command "Compress-Archive -LiteralPath '${srcDir.replace(/\\/g, '/')}' -DestinationPath '${destFile.replace(/\\/g, '/')}' -Force; Write-Output 'DONE'"`;
-    exec(cmd, { stdio: 'pipe', timeout: 120000 });
+    cmd = `powershell -NoProfile -Command "cd '${srcDir}'; Compress-Archive -Path * -DestinationPath '${destFile}' -Force"`;
   } else {
-    // Linux/macOS 使用 zip 命令
     cmd = `zip -r "${destFile}" . -x "*.DS_Store"`;
-    exec(cmd, { stdio: 'pipe', cwd: srcDir, timeout: 120000 });
   }
+
+  exec(cmd, { stdio: 'pipe', timeout: 120000 });
 
   // 验证文件确实生成了
   if (!fs.existsSync(destFile)) {
