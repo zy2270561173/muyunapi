@@ -186,7 +186,7 @@ MuYunapi/
 ### 1. 克隆项目
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/zy2270561173/muyunapi.git
 cd MuYunapi
 ```
 
@@ -306,7 +306,7 @@ sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER
 mkdir -p /var/www/muyunapi && cd /var/www/muyunapi
 
 # 通过 SCP / SFTP / Git 上传项目文件
-# 注意：不要上传 node_modules、.workbuddy、dist/ 等目录
+# 注意：不要上传 node_modules、dist/ 等目录
 ```
 
 **2. 配置环境变量**
@@ -549,7 +549,7 @@ SQLite 数据库，共 **17 张表**：
 | `call_logs` | API调用日志 |
 | `user_keys` | 用户自定义密钥表 |
 | `configs` | 系统配置表（KV结构） |
-| `tags` | 标签表 |
+| `标签` | 标签表 |
 | `favorites` | 收藏表 |
 | `announcements` | 公告表 |
 | `friendships` | 友链表 |
