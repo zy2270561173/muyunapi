@@ -156,7 +156,6 @@ function formatNum(n) {
   gap: 4px;
   font-size: 12px;
   color: var(--text-muted);
-}
   .fav-icon {
     color: var(--text-muted);
     cursor: pointer;
