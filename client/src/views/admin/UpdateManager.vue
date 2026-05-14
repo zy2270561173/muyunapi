@@ -544,6 +544,8 @@ onMounted(() => {
   loadConfig()
   loadUpdateHistory()
   loadBackups()
+  // 进入页面自动检查更新
+  checkForUpdate()
 })
 </script>
 
