@@ -382,17 +382,64 @@ sudo nginx -t && sudo systemctl reload nginx
 
 #### PM2 常用命令
 
+##### 独立启动（不通过 start.sh）
+
 ```bash
-pm2 list                    # 查看进程状态
-pm2 logs                    # 查看所有日志
-pm2 logs muyu-server        # 查看主服务日志
-pm2 logs muyu-update        # 查看更新服务器日志
-pm2 restart all             # 重启所有服务
-pm2 restart muyu-server     # 重启主服务
-pm2 restart muyu-update     # 重启更新服务器
-pm2 stop all                # 停止所有服务
-pm2 delete all              # 删除所有进程
-pm2 save                    # 保存当前进程列表
+# 全局安装 PM2
+sudo npm install -g pm2
+
+# 启动主服务（端口 3000）
+pm2 start server/index.js --name "muyu-server" --env production
+
+# 启动更新服务器（端口 3001）
+pm2 start update-server/index.js --name "muyu-update" --env production
+
+# 查看进程状态
+pm2 list
+
+# 查看日志
+pm2 logs muyu-server
+pm2 logs muyu-update
+
+# 重启服务
+pm2 restart muyu-server
+pm2 restart muyu-update
+pm2 restart all          # 重启所有服务
+
+# 停止服务
+pm2 stop muyu-server
+pm2 stop muyu-update
+pm2 stop all             # 停止所有服务
+
+# 删除进程
+pm2 delete muyu-server
+pm2 delete muyu-update
+pm2 delete all           # 删除所有进程
+
+# 保存进程列表（重启后自动恢复）
+pm2 save
+
+# 配置开机自启
+sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER
+```
+
+##### 使用 ecosystem.config.js 启动
+
+项目根目录的 `ecosystem.config.js` 已配置好双进程：
+
+```bash
+# 一键启动所有服务
+pm2 start ecosystem.config.js
+
+# 查看状态
+pm2 list
+# 输出示例：
+# ┌────┬────────────────┬──────────┬───────┼──────────┼──────────┤
+# │ id │ name           │ mode     │ status│ ↺       │ uptime   │
+# ├────┼────────────────┼──────────┼───────┼──────────┼──────────┤
+# │ 0  │ muyu-server    │ fork     │ online│ 0       │ 2h       │
+# │ 1  │ muyu-update    │ fork     │ online│ 0       │ 2h       │
+# └────┴────────────────┴──────────┴───────┴──────────┴──────────┘
 ```
 
 ---
