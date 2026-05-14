@@ -13,11 +13,14 @@
  *   --changelog="..."            更新日志，默认 "版本更新"
  *   --channel=stable|beta        通道，默认 stable
  *   --include-update-server      将 update-server/ 打入包中，触发热重载时同时重启更新服务器
+ *   --platform=win|linux        平台，默认 win
  */
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { execSync } = require('child_process');
+const zlib = require('zlib');
 
 // ─── 工具函数 ───
 
@@ -43,19 +46,30 @@ function versionToCode(v) {
 }
 
 function zipDirectory(srcDir, destFile) {
-  // Windows 下使用 PowerShell 创建 ZIP
   const destDir = path.dirname(destFile);
   if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-
-  // 先删除已存在的 zip
   if (fs.existsSync(destFile)) fs.unlinkSync(destFile);
 
-  // 使用 PowerShell Compress-Archive
-  const { execSync } = require('child_process');
-  execSync(
-    `powershell -Command "Compress-Archive -Path '${srcDir}\\*' -DestinationPath '${destFile}' -Force"`,
-    { stdio: 'ignore', cwd: path.dirname(srcDir) }
-  );
+  const { execSync: exec } = require('child_process');
+
+  // 检测平台，使用系统原生压缩工具
+  const isWindows = process.platform === 'win32';
+  let cmd;
+
+  if (isWindows) {
+    // PowerShell Compress-Archive（同步阻塞，确保完成）
+    cmd = `powershell -NoProfile -Command "Compress-Archive -LiteralPath '${srcDir.replace(/\\/g, '/')}' -DestinationPath '${destFile.replace(/\\/g, '/')}' -Force; Write-Output 'DONE'"`;
+    exec(cmd, { stdio: 'pipe', timeout: 120000 });
+  } else {
+    // Linux/macOS 使用 zip 命令
+    cmd = `zip -r "${destFile}" . -x "*.DS_Store"`;
+    exec(cmd, { stdio: 'pipe', cwd: srcDir, timeout: 120000 });
+  }
+
+  // 验证文件确实生成了
+  if (!fs.existsSync(destFile)) {
+    throw new Error(`ZIP 文件生成失败: ${destFile}`);
+  }
 }
 
 // ─── 主流程 ───
@@ -64,7 +78,7 @@ async function main() {
   const args = parseArgs();
 
   log('\n╔══════════════════════════════════════╗', 'cyan');
-  log('║    MuYunAPI 更新包构建工具 (Windows)  ║', 'cyan');
+  log('║     MuYunAPI 更新包构建工具          ║', 'cyan');
   log('╚══════════════════════════════════════╝', 'cyan');
 
   // 参数
@@ -82,7 +96,7 @@ async function main() {
 
   const channel = args.channel || 'stable';
   const changelogText = args.changelog || '版本更新';
-  const platform = 'win';
+  const platform = args.platform || 'win';
   const arch = 'x64';
   const includeUpdateServer = args['include-update-server'] === true || args['include-update-server'] === 'true';
 

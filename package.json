@@ -28,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/zy2270561173/muyunapi/issues"
   },
-  "homepage": "https://github.com/zy2270561173/muyunapi#readme"
+  "homepage": "https://github.com/zy2270561173/muyunapi#readme",
+  "devDependencies": {
+    "archiver": "^8.0.0"
+  }
 }
