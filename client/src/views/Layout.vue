@@ -513,6 +513,7 @@ function handleLogoutMobile() {
 // 移动端菜单
 .mobile-menu {
   padding: 20px 0;
+  background: var(--bg-card);
 
   .mobile-menu-header {
     display: flex;
@@ -710,6 +711,18 @@ function handleLogoutMobile() {
 
   .fs-list {
     gap: 8px;
+  }
+}
+
+// 移动端抽屉跟随主题
+@media (max-width: 768px) {
+  :deep(.el-drawer) {
+    background: var(--bg-card) !important;
+  }
+  
+  :deep(.el-drawer__body) {
+    background: var(--bg-card);
+    color: var(--text-primary);
   }
 }
 </style>

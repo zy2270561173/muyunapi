@@ -161,7 +161,7 @@ async function main() {
     platform,
     arch,
     releaseDate: new Date().toISOString().split('T')[0],
-    includesUpdateServer,
+    includesUpdateServer: includeUpdateServer,
     changelog: {
       zh: [changelogText],
       en: ['Version update']
