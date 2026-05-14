@@ -43,6 +43,7 @@ const routes = [
       { path: 'logs', component: () => import('../views/admin/Logs.vue'), meta: { title: '调用日志' } },
       { path: 'settings', component: () => import('../views/admin/Settings.vue'), meta: { title: '系统设置' } },
       { path: 'about', component: () => import('../views/admin/AboutManager.vue'), meta: { title: '关于我' } },
+      { path: 'update', component: () => import('../views/admin/UpdateManager.vue'), meta: { title: '系统更新' } },
     ]
   },
   { path: '/:pathMatch(.*)*', component: () => import('../views/NotFound.vue') }

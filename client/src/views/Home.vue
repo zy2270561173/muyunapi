@@ -454,14 +454,84 @@ onMounted(async () => {
   border-radius: var(--radius-md);
   padding: 28px;
   transition: var(--transition);
-  
+
   &:hover {
     border-color: var(--border-active);
     transform: translateY(-4px);
   }
-  
+
   .feature-icon { font-size: 36px; margin-bottom: 16px; }
   h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px; }
   p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+}
+
+// 响应式
+@media (max-width: 768px) {
+  .hero {
+    padding: 60px 16px 48px;
+    min-height: auto;
+  }
+  .hero-title {
+    font-size: 32px;
+    letter-spacing: -0.5px;
+  }
+  .hero-subtitle {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .hero-search {
+    :deep(.el-input__wrapper) {
+      height: 44px !important;
+    }
+    :deep(.el-input-group__append) {
+      padding: 0 16px;
+    }
+  }
+  .hero-stats {
+    gap: 24px;
+    .stat-value { font-size: 22px; }
+    .stat-label { font-size: 12px; }
+  }
+  .announce-inner {
+    padding: 0 16px;
+  }
+  .section {
+    padding: 40px 16px;
+  }
+  .section-header {
+    margin-bottom: 24px;
+    h2 { font-size: 20px; }
+  }
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .category-card {
+    padding: 16px 12px;
+    .cat-icon { font-size: 24px; }
+    .cat-name { font-size: 13px; }
+    .cat-count { font-size: 11px; }
+  }
+  .api-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .feature-card {
+    padding: 20px;
+    .feature-icon { font-size: 28px; }
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 28px;
+  }
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>

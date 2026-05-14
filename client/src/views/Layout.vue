@@ -8,7 +8,8 @@
           <span class="logo-text">MuYunAPI</span>
         </router-link>
 
-        <nav class="nav-links">
+        <!-- 桌面端导航 -->
+        <nav class="nav-links desktop-only">
           <router-link to="/" exact-active-class="active">首页</router-link>
           <router-link to="/explore" active-class="active">浏览接口</router-link>
           <router-link v-if="aboutEnabled" to="/about" active-class="active">关于我</router-link>
@@ -65,7 +66,7 @@
             </template>
           </el-dialog>
 
-          <div v-if="userStore.isLoggedIn" class="user-menu">
+          <div v-if="userStore.isLoggedIn" class="user-menu desktop-only">
             <el-dropdown trigger="click" placement="bottom-end">
               <div class="user-avatar-btn">
                 <el-avatar :src="avatarUrl" :size="32">{{ userStore.userInfo?.nickname?.[0] }}</el-avatar>
@@ -93,13 +94,68 @@
               </template>
             </el-dropdown>
           </div>
-          <div v-else class="auth-btns">
+          <div v-else class="auth-btns desktop-only">
             <el-button text @click="$router.push('/login')" style="color:var(--text-secondary)">登录</el-button>
             <el-button type="primary" @click="$router.push('/register')" size="small">注册</el-button>
           </div>
+
+          <!-- 移动端菜单按钮 -->
+          <el-button text class="mobile-menu-btn mobile-only" @click="mobileMenuOpen = true">
+            <el-icon :size="24"><Menu /></el-icon>
+          </el-button>
         </div>
       </div>
     </header>
+
+    <!-- 移动端菜单抽屉 -->
+    <el-drawer
+      v-model="mobileMenuOpen"
+      title="菜单"
+      direction="rtl"
+      size="280px"
+      :with-header="false"
+    >
+      <div class="mobile-menu">
+        <div class="mobile-menu-header">
+          <div class="logo-icon sm">M</div>
+          <span class="logo-text">MuYunAPI</span>
+        </div>
+
+        <nav class="mobile-nav">
+          <router-link to="/" @click="mobileMenuOpen = false">
+            <el-icon><HomeFilled /></el-icon> 首页
+          </router-link>
+          <router-link to="/explore" @click="mobileMenuOpen = false">
+            <el-icon><Grid /></el-icon> 浏览接口
+          </router-link>
+          <router-link v-if="aboutEnabled" to="/about" @click="mobileMenuOpen = false">
+            <el-icon><User /></el-icon> 关于我
+          </router-link>
+          <router-link v-if="userStore.isAdmin" to="/admin" @click="mobileMenuOpen = false">
+            <el-icon><Setting /></el-icon> 管理后台
+          </router-link>
+        </nav>
+
+        <div class="mobile-divider"></div>
+
+        <div v-if="userStore.isLoggedIn" class="mobile-user">
+          <div class="mobile-user-info">
+            <el-avatar :src="avatarUrl" :size="40">{{ userStore.userInfo?.nickname?.[0] }}</el-avatar>
+            <span class="mobile-username">{{ userStore.userInfo?.nickname }}</span>
+          </div>
+          <div class="mobile-user-links">
+            <router-link to="/user" @click="mobileMenuOpen = false">个人中心</router-link>
+            <router-link to="/user/keys" @click="mobileMenuOpen = false">密钥管理</router-link>
+            <router-link to="/user/favorites" @click="mobileMenuOpen = false">我的收藏</router-link>
+            <a @click="handleLogoutMobile">退出登录</a>
+          </div>
+        </div>
+        <div v-else class="mobile-auth">
+          <el-button type="primary" @click="$router.push('/login'); mobileMenuOpen = false" style="width:100%">登录</el-button>
+          <el-button @click="$router.push('/register'); mobileMenuOpen = false" style="width:100%;margin-top:12px">注册</el-button>
+        </div>
+      </div>
+    </el-drawer>
 
     <!-- 主内容 -->
     <main class="main-content">
@@ -148,6 +204,21 @@ import { useUserStore } from '../stores/user'
 import { useThemeStore } from '../stores/theme'
 import { siteApi, friendshipApi } from '../api'
 import axios from 'axios'
+import {
+  Sunny,
+  Moon,
+  Check,
+  Upload,
+  User,
+  Key,
+  Star,
+  Setting,
+  SwitchButton,
+  ArrowDown,
+  Menu,
+  HomeFilled,
+  Grid
+} from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -158,6 +229,7 @@ const friendships = ref([])
 const showImportDialog = ref(false)
 const importJson = ref('')
 const aboutEnabled = ref(true)
+const mobileMenuOpen = ref(false)
 
 const avatarUrl = computed(() => {
   const av = userStore.userInfo?.avatar
@@ -233,6 +305,11 @@ function handleLogout() {
   userStore.logout()
   router.push('/')
   ElMessage.success('已退出登录')
+}
+
+function handleLogoutMobile() {
+  mobileMenuOpen.value = false
+  handleLogout()
 }
 </script>
 
@@ -406,12 +483,12 @@ function handleLogout() {
   background: var(--bg-card2);
   border: 1px solid var(--border);
   transition: all 0.2s;
-  
+
   &:hover {
     border-color: var(--primary);
     background: var(--bg-card3);
   }
-  
+
   .username {
     font-size: 13px;
     color: var(--text-primary);
@@ -425,6 +502,103 @@ function handleLogout() {
 .user-dropdown {
   :deep(.el-dropdown-menu) { background: var(--bg-card2); }
   :deep(.el-dropdown-menu__item) { color: var(--text-secondary); }
+}
+
+// 移动端菜单按钮
+.mobile-menu-btn {
+  padding: 8px !important;
+  color: var(--text-primary) !important;
+}
+
+// 移动端菜单
+.mobile-menu {
+  padding: 20px 0;
+
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+
+    .logo-text {
+      font-size: 18px;
+    }
+  }
+
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 16px;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-primary);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+
+      &:hover, &.router-link-active {
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
+        color: var(--primary);
+      }
+
+      .el-icon {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .mobile-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 20px;
+  }
+
+  .mobile-user {
+    padding: 0 20px;
+
+    .mobile-user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .mobile-username {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .mobile-user-links {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      a {
+        padding: 10px 12px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 6px;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--bg-card2);
+          color: var(--text-primary);
+        }
+      }
+    }
+  }
+
+  .mobile-auth {
+    padding: 0 20px;
+  }
 }
 
 .main-content {
@@ -491,5 +665,51 @@ function handleLogout() {
   border: 1px solid var(--border);
   transition: all 0.2s;
   &:hover { color: var(--primary); border-color: var(--primary); }
+}
+
+// 响应式
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .navbar-inner {
+    padding: 0 16px;
+    gap: 16px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+  }
+
+  .main-content {
+    padding-top: 56px;
+  }
+
+  .footer {
+    padding: 24px 16px;
+  }
+
+  .footer-links {
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .fs-list {
+    gap: 8px;
+  }
 }
 </style>

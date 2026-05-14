@@ -1,0 +1,30 @@
+{
+  "name": "muyunapi",
+  "version": "1.2.2",
+  "description": "MuYunAPI - 免费开放的API聚合分享平台",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "cd server && npm start",
+    "dev": "cd server && npm run dev",
+    "update": "node scripts/update.js",
+    "update:check": "node scripts/update.js --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zy2270561173/muyunapi.git"
+  },
+  "keywords": [
+    "api",
+    "proxy",
+    "aggregation",
+    "vue",
+    "express",
+    "sqlite"
+  ],
+  "author": "zy2270561173",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zy2270561173/muyunapi/issues"
+  },
+  "homepage": "https://github.com/zy2270561173/muyunapi#readme"
+}

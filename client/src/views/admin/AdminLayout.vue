@@ -57,6 +57,10 @@
           <el-icon><Setting /></el-icon>
           <template #title>系统设置</template>
         </el-menu-item>
+        <el-menu-item index="/admin/update">
+          <el-icon><Download /></el-icon>
+          <template #title>系统更新</template>
+        </el-menu-item>
       </el-menu>
 
       <div class="sidebar-footer">
@@ -126,7 +130,8 @@ import {
   Expand,
   Fold,
   ArrowDown,
-  UserFilled
+  UserFilled,
+  Download
 } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
 

@@ -110,3 +110,9 @@ export const friendshipApi = {
   update: (id, data) => http.put(`/friendships/${id}`, data),
   delete: (id) => http.delete(`/friendships/${id}`),
 }
+
+export const updateApi = {
+  getVersion: () => http.get('/update/version'),
+  checkUpdate: () => http.get('/update/check'),
+  performUpdate: (backup = true) => http.post('/update/perform', { backup }),
+}

@@ -289,4 +289,62 @@ onMounted(async () => {
   justify-content: center;
   margin-top: 40px;
 }
+
+// 响应式
+@media (max-width: 768px) {
+  .explore-header {
+    padding: 24px 16px 20px;
+    h1 { font-size: 22px; }
+    p { font-size: 13px; }
+  }
+  .container {
+    padding: 0 16px;
+  }
+  .explore-body {
+    flex-direction: column;
+    padding-top: 16px;
+    padding-bottom: 40px;
+  }
+  .sidebar {
+    width: 100%;
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .filter-section {
+    flex: 1;
+    min-width: 140px;
+    margin-bottom: 0;
+    padding: 12px;
+  }
+  .cat-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .cat-item {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    &.active {
+      border-color: var(--primary);
+    }
+  }
+  .radio-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .api-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .api-card-skeleton {
+    height: auto;
+  }
+}
 </style>

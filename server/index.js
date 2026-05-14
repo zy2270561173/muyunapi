@@ -35,6 +35,7 @@ app.use('/api/friendships', require('./routes/friendships'));
 app.use('/api/libraries', require('./routes/libraries'));
 app.use('/api/about', require('./routes/about'));
 app.use('/api/timeline-types', require('./routes/timeline-types'));
+app.use('/api/update', require('./routes/update'));
 // API版本管理（嵌套路由）
 app.use('/api/apis/:apiId/versions', require('./routes/api-versions'));
 
