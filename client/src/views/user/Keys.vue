@@ -308,4 +308,15 @@ h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); }
 }
 .key-skeleton { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
 .key-card-skeleton { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; height: 200px; }
+
+// 响应式
+@media (max-width: 768px) {
+  .page-header { padding: 24px 16px 20px; h1 { font-size: 22px; } }
+  .container { padding: 0 16px; }
+  .page-body { padding-top: 20px; }
+  .tip-card { padding: 12px 16px; gap: 12px; p { font-size: 12px; } }
+  .keys-grid { grid-template-columns: 1fr; gap: 12px; }
+  .key-card { padding: 16px; }
+  .key-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
 </style>

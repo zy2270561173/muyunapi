@@ -157,11 +157,22 @@ function formatNum(n) {
   font-size: 12px;
   color: var(--text-muted);
 }
-.fav-icon {
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover { color: var(--primary); }
-  &.favorited { color: var(--primary); }
+  .fav-icon {
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    &:hover { color: var(--primary); }
+    &.favorited { color: var(--primary); }
+  }
+}
+
+// 响应式
+@media (max-width: 768px) {
+  .api-card { padding: 16px; }
+  .api-name { font-size: 14px; }
+  .api-desc { font-size: 12px; -webkit-line-clamp: 3; min-height: auto; }
+  .cat-badge { font-size: 11px; padding: 2px 8px; }
+  .method-badge { font-size: 10px; padding: 1px 6px; }
+  .call-count { font-size: 11px; }
 }
 </style>

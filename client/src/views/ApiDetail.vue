@@ -692,4 +692,52 @@ pre {
     tr:hover td { background: rgba(233,147,18,0.04); }
   }
 }
+
+// ========== 手机端响应式 ==========
+@media (max-width: 768px) {
+  .detail-hero { padding: 24px 16px 20px; }
+  h1 { font-size: 22px !important; }
+  .api-desc-text { font-size: 14px; }
+  .hero-content { flex-direction: column; gap: 16px; }
+  .hero-right {
+    flex-direction: row;
+    padding-top: 0;
+    .el-button { flex: 1; }
+  }
+
+  .detail-body {
+    flex-direction: column;
+    padding-top: 20px;
+    gap: 16px;
+  }
+  .right-panel {
+    width: 100% !important;
+    position: static !important;
+    gap: 16px;
+  }
+  .info-card { padding: 16px; }
+  .card-title { font-size: 14px; }
+
+  // 接口地址栏
+  .endpoint-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    .endpoint-url { flex-basis: 100%; order: 3; }
+  }
+
+  // 参数表格横向滚动
+  :deep(.el-table) { width: 100%; }
+  :deep(.el-table__body-wrapper) { overflow-x: auto; }
+
+  // 测速柱图
+  .speed-bars { gap: 4px; }
+  .bar-val { font-size: 9px; }
+
+  // markdown 表格横向滚动
+  .md-body :deep(.md-table) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
 </style>

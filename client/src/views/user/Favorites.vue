@@ -62,4 +62,12 @@ onMounted(async () => {
 .api-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
 .api-card-skeleton { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; height: 180px; }
 .empty-state { text-align: center; padding: 80px 0; .empty-icon { font-size: 56px; margin-bottom: 16px; } p { color: var(--text-secondary); margin-bottom: 20px; } }
+
+// 响应式
+@media (max-width: 768px) {
+  .page-header { padding: 24px 16px 20px; h1 { font-size: 22px; } }
+  .container { padding: 0 16px; }
+  .page-body { padding-top: 20px; }
+  .api-grid { gap: 12px; }
+}
 </style>

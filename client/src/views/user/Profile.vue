@@ -373,4 +373,37 @@ onMounted(loadData)
   color: var(--text-muted);
   font-style: italic;
 }
+
+// 响应式
+@media (max-width: 768px) {
+  .page-header { padding: 24px 16px 20px; h1 { font-size: 22px; } }
+  .container { padding: 0 16px; }
+  .page-body {
+    flex-direction: column;
+    padding-top: 20px;
+    gap: 16px;
+  }
+  .user-card {
+    width: 100%;
+    position: static;
+    padding: 24px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    text-align: left;
+    :deep(.el-tag) { order: 3; }
+  }
+  .avatar-area { margin-bottom: 0; }
+  .user-nickname { margin-bottom: 0; }
+  .user-uid { margin-bottom: 0; }
+  .user-stats {
+    width: 100%;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 16px;
+  }
+  .credits-card { margin-top: 16px; }
+  .right-content { gap: 16px; }
+  .info-card { padding: 16px; }
+}
 </style>

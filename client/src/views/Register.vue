@@ -199,4 +199,17 @@ h2 { font-size: 26px; font-weight: 700; color: var(--text-primary); margin-botto
     background: var(--border);
   }
 }
+
+// 响应式
+@media (max-width: 768px) {
+  .auth-card {
+    padding: 32px 20px;
+    border-radius: var(--radius-md);
+  }
+  h2 { font-size: 22px; }
+  .sub-title { font-size: 13px; margin-bottom: 24px; }
+  .auth-logo { margin-bottom: 24px; }
+  .auth-logo .logo-icon { width: 34px; height: 34px; font-size: 18px; }
+  .auth-logo span { font-size: 18px; }
+}
 </style>
