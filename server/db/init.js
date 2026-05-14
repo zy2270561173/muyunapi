@@ -177,6 +177,9 @@ const defaultConfigs = [
   ['site_logo', '', '站点Logo'],
   ['icp', '', 'ICP备案号'],
   ['friendship_enabled', '1', '是否开启友链'],
+  ['footer_time_enabled', '0', '页脚是否显示运行时间'],
+  ['footer_time_style', 'running', '页脚运行时间风格(running/穿越了/稳定运行了)'],
+  ['site_start_date', '2026-01-01', '站点上线日期(YYYY-MM-DD)'],
 ];
 
 const insertConfig = db.prepare(`INSERT OR IGNORE INTO configs (key, value, description) VALUES (?, ?, ?)`);

@@ -64,7 +64,7 @@ app.get('/api/announcements/popup', (req, res) => {
 // 站点信息
 app.get('/api/site-info', (req, res) => {
   const db = require('./db/init');
-  const configs = db.prepare("SELECT key, value FROM configs WHERE key IN ('site_name','site_description','site_keywords','site_logo','icp')").all();
+  const configs = db.prepare("SELECT key, value FROM configs WHERE key IN ('site_name','site_description','site_keywords','site_logo','icp','footer_time_enabled','footer_time_style','site_start_date')").all();
   const obj = {};
   configs.forEach(c => { obj[c.key] = c.value; });
   const apiCount = db.prepare('SELECT COUNT(*) as cnt FROM apis WHERE status = 1').get().cnt;

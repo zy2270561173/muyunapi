@@ -115,6 +115,39 @@
         </div>
       </div>
 
+      <!-- 页面显示设置 -->
+      <div class="settings-section">
+        <div class="section-title">🎨 页面显示</div>
+        <div class="settings-form">
+          <div class="toggle-item">
+            <div>
+              <div class="toggle-label">页脚运行时间</div>
+              <div class="toggle-desc">开启后在页脚显示本站已运行时间（年/月/天/时/分/秒，实时刷新）</div>
+            </div>
+            <el-switch v-model="configs.footer_time_enabled" active-value="1" inactive-value="0" />
+          </div>
+          <div class="field-item">
+            <label>运行时间风格</label>
+            <el-select v-model="configs.footer_time_style" style="width:100%">
+              <el-option label="运行了（本站已运行了 X年X月X天...）" value="running" />
+              <el-option label="穿越了（本站已穿越了 X年X月X天...）" value="time_travel" />
+              <el-option label="稳定运行了（本站已稳定运行了 X年...）" value="stable" />
+            </el-select>
+          </div>
+          <div class="field-item">
+            <label>站点上线日期</label>
+            <el-date-picker
+              v-model="siteStartDate"
+              type="date"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              placeholder="选择站点上线日期"
+              style="width:100%"
+            />
+          </div>
+        </div>
+      </div>
+
       <el-button type="primary" size="large" @click="saveAll" :loading="saving" style="min-width:140px">
         <el-icon><Check /></el-icon> 保存所有设置
       </el-button>
@@ -123,7 +156,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../../api'
 import http from '../../api/http'
@@ -132,6 +165,7 @@ const configs = reactive({})
 const loading = ref(true)
 const saving = ref(false)
 const testingSmtp = ref(false)
+const siteStartDate = ref(null)
 
 async function load() {
   loading.value = true
@@ -139,11 +173,22 @@ async function load() {
   if (res.code === 200) {
     Object.entries(res.data).forEach(([k, v]) => { configs[k] = v.value })
   }
+  // 将 site_start_date 字符串转为 Date 对象供日期选择器使用
+  if (configs.site_start_date) {
+    siteStartDate.value = new Date(configs.site_start_date + 'T00:00:00')
+  }
   loading.value = false
 }
 
 async function saveAll() {
   saving.value = true
+  // 将日期对象转回字符串
+  if (siteStartDate.value) {
+    const d = new Date(siteStartDate.value)
+    configs.site_start_date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+  } else {
+    configs.site_start_date = ''
+  }
   const res = await adminApi.saveConfigs(configs)
   if (res.code === 200) ElMessage.success('设置已保存')
   else ElMessage.error(res.message)

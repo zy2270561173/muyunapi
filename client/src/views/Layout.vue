@@ -191,6 +191,7 @@
           </div>
         </div>
         <p class="footer-copy">© 2026 MuYunAPI · <span v-if="siteInfo.icp">{{ siteInfo.icp }}</span></p>
+        <p v-if="siteInfo.footer_time_enabled === '1' && footerTimeStr" class="footer-time">{{ footerTimePrefix }}{{ footerTimeStr }}</p>
       </div>
     </footer>
   </div>
@@ -230,12 +231,50 @@ const showImportDialog = ref(false)
 const importJson = ref('')
 const aboutEnabled = ref(true)
 const mobileMenuOpen = ref(false)
+const footerTimeStr = ref('')
+let footerTimer = null
 
 const avatarUrl = computed(() => {
   const av = userStore.userInfo?.avatar
   if (!av) return ''
   return av.startsWith('http') ? av : av
 })
+
+const footerTimePrefix = computed(() => {
+  const style = siteInfo.value?.footer_time_style || 'running'
+  const map = {
+    running: '本站已运行了 ',
+    time_travel: '本站已穿越了 ',
+    stable: '本站已稳定运行了 ',
+  }
+  return map[style] || map.running
+})
+
+function updateFooterTime() {
+  const startStr = siteInfo.value?.site_start_date
+  if (!startStr) return
+  const start = new Date(startStr + 'T00:00:00')
+  const now = new Date()
+
+  let years = now.getFullYear() - start.getFullYear()
+  let months = now.getMonth() - start.getMonth()
+  let days = now.getDate() - start.getDate()
+  let hours = now.getHours() - start.getHours()
+  let minutes = now.getMinutes() - start.getMinutes()
+  let seconds = now.getSeconds() - start.getSeconds()
+
+  if (seconds < 0) { seconds += 60; minutes -= 1 }
+  if (minutes < 0) { minutes += 60; hours -= 1 }
+  if (hours < 0) { hours += 24; days -= 1 }
+  if (days < 0) {
+    months -= 1
+    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+    days += prevMonth.getDate()
+  }
+  if (months < 0) { months += 12; years -= 1 }
+
+  footerTimeStr.value = `${years}年${months}月${days}天 ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`
+}
 
 // 获取主题预览样式
 function getThemePreview(theme) {
@@ -288,6 +327,9 @@ onMounted(async () => {
     const res = await siteApi.getInfo()
     if (res.code === 200) siteInfo.value = res.data
   } catch (e) {}
+  // 启动页脚运行时间定时器
+  updateFooterTime()
+  footerTimer = setInterval(updateFooterTime, 1000)
   // 加载友链
   try {
     const res = await friendshipApi.getList()
@@ -299,6 +341,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', scrollHandler)
+  if (footerTimer) clearInterval(footerTimer)
 })
 
 function handleLogout() {
@@ -636,6 +679,8 @@ function handleLogoutMobile() {
   a { color: var(--text-muted); text-decoration: none; font-size: 13px; &:hover { color: var(--primary); } }
 }
 .footer-copy { color: var(--text-muted); font-size: 12px; }
+.footer-time { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+
 
 // 友链
 .friendships {

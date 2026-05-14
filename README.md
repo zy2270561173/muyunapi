@@ -37,6 +37,7 @@
 | **加密** | bcryptjs | ^3.0.3 | 密码哈希加密 |
 | **邮件** | nodemailer | ^8.0.7 | SMTP邮件发送 |
 | **限流** | express-rate-limit | ^8.5.1 | API速率限制 |
+| **进程管理** | PM2 | latest | 生产环境守护进程、热重载、日志管理 |
 | **文件上传** | multer | ^2.1.1 | 文件上传处理 |
 | **工具库** | nanoid / uuid | latest | ID生成 |
 
@@ -240,9 +241,10 @@ node update_start.js
 
 ---
 
-## 🖥 服务器部署指南
+<details>
+<summary>🖥 服务器部署指南（点击展开）</summary>
 
-### 系统架构
+## 系统架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -496,6 +498,8 @@ npm run build:update -- --version=1.2.3 --platform=linux --arch=x64 --include-up
 - 两边同时热重载，无需手动操作
 
 ---
+
+</details>
 
 ## 🔧 环境变量
 

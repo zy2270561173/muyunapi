@@ -1,6 +1,6 @@
 {
   "name": "muyunapi",
-  "version": "1.2.5",
+  "version": "1.2.5-1",
   "description": "MuYunAPI - 免费开放的API聚合分享平台",
   "main": "server/index.js",
   "scripts": {
