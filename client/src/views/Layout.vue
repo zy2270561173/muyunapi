@@ -11,6 +11,7 @@
         <nav class="nav-links">
           <router-link to="/" exact-active-class="active">首页</router-link>
           <router-link to="/explore" active-class="active">浏览接口</router-link>
+          <router-link to="/about" active-class="active">关于我</router-link>
           <router-link v-if="userStore.isAdmin" to="/admin" active-class="active" class="admin-link">
             <el-icon><Setting /></el-icon> 管理后台
           </router-link>

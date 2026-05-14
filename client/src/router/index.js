@@ -12,6 +12,7 @@ const routes = [
       { path: 'user', component: () => import('../views/user/Profile.vue'), meta: { title: '个人中心', auth: true } },
       { path: 'user/keys', component: () => import('../views/user/Keys.vue'), meta: { title: '密钥管理', auth: true } },
       { path: 'user/favorites', component: () => import('../views/user/Favorites.vue'), meta: { title: '我的收藏', auth: true } },
+      { path: 'about', component: () => import('../views/About.vue'), meta: { title: '关于我' } },
       { path: 'goto/:id', component: () => import('../views/GotoLink.vue'), meta: { title: '跳转中...' } },
     ]
   },
@@ -41,6 +42,7 @@ const routes = [
       { path: 'friendships', component: () => import('../views/admin/FriendshipManager.vue'), meta: { title: '友链管理' } },
       { path: 'logs', component: () => import('../views/admin/Logs.vue'), meta: { title: '调用日志' } },
       { path: 'settings', component: () => import('../views/admin/Settings.vue'), meta: { title: '系统设置' } },
+      { path: 'about', component: () => import('../views/admin/AboutManager.vue'), meta: { title: '关于我' } },
     ]
   },
   { path: '/:pathMatch(.*)*', component: () => import('../views/NotFound.vue') }

@@ -33,6 +33,7 @@ app.use('/api/proxy', require('./routes/proxy'));
 app.use('/api/themes', require('./routes/themes'));
 app.use('/api/friendships', require('./routes/friendships'));
 app.use('/api/libraries', require('./routes/libraries'));
+app.use('/api/about', require('./routes/about'));
 // API版本管理（嵌套路由）
 app.use('/api/apis/:apiId/versions', require('./routes/api-versions'));
 

@@ -78,6 +78,7 @@
 - **调用日志**: 分页查看、按API筛选
 - **系统设置**: 站点信息、SMTP配置、注册/验证开关、限流配置
 - **SMTP测试**: 发送测试邮件验证配置
+- **关于我管理**: 页面开关、个人信息、教育背景、技能标签、GitHub同步配置
 
 ### 📦 内置库系统
 - 系统预置 18+ 个实用接口
@@ -111,7 +112,7 @@ MuYunapi/
 │   ├── index.js                     # 服务入口
 │   ├── package.json                 # 后端依赖
 │   ├── db/
-│   │   └── init.js                  # 数据库初始化（15张表）
+│   │   └── init.js                  # 数据库初始化（17张表）
 │   ├── middleware/
 │   │   └── auth.js                  # JWT认证中间件
 │   ├── routes/
@@ -123,7 +124,8 @@ MuYunapi/
 │   │   ├── themes.js                # 主题路由
 │   │   ├── friendships.js           # 友链路由
 │   │   ├── libraries.js             # 内置库管理
-│   │   └── api-versions.js          # API版本管理
+│   │   ├── api-versions.js          # API版本管理
+│   │   └── about.js                 # 关于我页面管理
 │   ├── libraries/
 │   │   ├── builtIn.js               # 内置接口定义（18个）
 │   │   ├── loader.js                # 动态脚本加载器
@@ -161,12 +163,19 @@ MuYunapi/
 │           ├── Home.vue             # 首页
 │           ├── Explore.vue          # 浏览接口
 │           ├── ApiDetail.vue        # 接口详情
+│           ├── About.vue            # 关于我页面
 │           ├── Login.vue            # 登录
 │           ├── Register.vue         # 注册
 │           ├── user/                # 用户中心
-│           └── admin/               # 管理后台（10个页面）
+│           └── admin/               # 管理后台（11个页面）
 │
-└── script/                          # 待上传的脚本文件
+├── script/                          # 待上传的脚本文件
+│
+└── .vscode/                         # VSCode开发配置
+    ├── settings.json                # 编辑器设置
+    ├── launch.json                  # 调试配置
+    ├── tasks.json                   # 任务配置
+    └── extensions.json              # 推荐扩展
 ```
 
 ---
@@ -263,7 +272,7 @@ cd server && npm start
 
 ## 🗄 数据库设计
 
-SQLite 数据库，共 **15 张表**：
+SQLite 数据库，共 **17 张表**：
 
 | 表名 | 说明 |
 |------|------|
@@ -282,6 +291,8 @@ SQLite 数据库，共 **15 张表**：
 | `friendships` | 友链表 |
 | `themes` | 主题表 |
 | `credit_transactions` | 积分流水表 |
+| `about_page` | 关于我页面配置表 |
+| `github_sync_logs` | GitHub同步备份记录表 |
 
 ---
 
@@ -377,6 +388,16 @@ SQLite 数据库，共 **15 张表**：
 | DELETE | `/api/apis/:apiId/versions/:ver` | 删除版本 | 管理员 |
 | POST | `/api/apis/:apiId/versions/:ver/activate` | 切换激活版本 | 管理员 |
 | POST | `/api/apis/:apiId/versions/fork` | 从当前版本复制 | 管理员 |
+
+### 关于我页面 `/api/about`
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| GET | `/api/about` | 前台获取关于我信息 | 否 |
+| GET | `/api/about/admin` | 后台获取完整配置 | 管理员 |
+| PUT | `/api/about/admin` | 更新关于我配置 | 管理员 |
+| POST | `/api/about/sync-github` | 手动触发GitHub同步 | 管理员 |
+| GET | `/api/about/sync-logs` | 获取同步日志 | 管理员 |
 
 ---
 
@@ -531,6 +552,19 @@ module.exports = {
 ---
 
 ## 📝 更新日志
+
+### v1.2.1 (2026-05-14)
+
+**新增功能**
+- ✨ 关于我页面：前台展示个人信息、教育背景、技能标签、联系方式
+- ✨ 关于我管理后台：开关控制、内容编辑、技能管理、更新日志维护
+- ✨ GitHub 自动同步：每小时检查仓库更新、获取提交记录、自动备份
+- ✨ GitHub 同步日志：记录每次同步的提交信息、备份路径
+- ✨ .vscode 开发配置：launch.json、tasks.json、settings.json、extensions.json
+
+**数据**
+- 🏫 添加学校信息：普宁职业技术学校（招生代码：8800587）
+- 🔗 开源地址：https://github.com/zy2270561173/muyunapi
 
 ### v1.2.0 (2026-05-14)
 

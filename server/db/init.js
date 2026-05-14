@@ -377,4 +377,73 @@ try {
   // 字段已存在时忽略错误
 }
 
+// 关于我页面配置表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS about_page (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    is_enabled INTEGER DEFAULT 1,
+    name TEXT DEFAULT '开发者',
+    avatar TEXT DEFAULT '',
+    school_name TEXT DEFAULT '普宁职业技术学校',
+    school_code TEXT DEFAULT '8800587',
+    major TEXT DEFAULT '计算机网络技术',
+    class_name TEXT DEFAULT '',
+    bio TEXT DEFAULT '',
+    skills TEXT DEFAULT '[]',
+    github_url TEXT DEFAULT '',
+    email TEXT DEFAULT '',
+    wechat TEXT DEFAULT '',
+    qq TEXT DEFAULT '',
+    update_log TEXT DEFAULT '',
+    auto_sync_github INTEGER DEFAULT 1,
+    github_repo TEXT DEFAULT 'zy2270561173/muyunapi',
+    last_sync_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+console.log('[DB] about_page 表已创建/验证');
+
+// GitHub同步备份记录表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS github_sync_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commit_hash TEXT NOT NULL,
+    commit_message TEXT,
+    commit_author TEXT,
+    commit_date DATETIME,
+    backup_path TEXT,
+    is_synced INTEGER DEFAULT 0,
+    synced_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+console.log('[DB] github_sync_logs 表已创建/验证');
+
+// 初始化关于我页面默认数据
+const aboutExists = db.prepare('SELECT id FROM about_page LIMIT 1').get();
+if (!aboutExists) {
+  db.prepare(`
+    INSERT INTO about_page (
+      name, school_name, school_code, major, bio, 
+      github_url, update_log, auto_sync_github, github_repo
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    'MuYunAPI 开发者',
+    '普宁职业技术学校',
+    '8800587',
+    '计算机网络技术',
+    '热爱开源，专注于API聚合与分享平台的开发',
+    'https://github.com/zy2270561173/muyunapi',
+    JSON.stringify([
+      { version: 'v1.2.0', date: '2026-05-14', content: '新增API版本管理、Markdown编辑器、主题系统重构' },
+      { version: 'v1.1.0', date: '2026-05-01', content: '新增内置库脚本管理、积分系统' },
+      { version: 'v1.0.0', date: '2026-04-15', content: '项目初始化，基础功能完成' }
+    ]),
+    1,
+    'zy2270561173/muyunapi'
+  );
+  console.log('[DB] 关于我页面默认数据已创建');
+}
+
 module.exports = db;

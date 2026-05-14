@@ -66,6 +66,11 @@ export const adminApi = {
   getLogs: (params) => http.get('/admin/logs', { params }),
   // 内置库
   getAvailableLocalApis: (params) => http.get('/libraries/available', { params }),
+  // 关于我管理
+  getAboutConfig: () => http.get('/about/admin'),
+  updateAboutConfig: (data) => http.put('/about/admin', data),
+  syncGitHub: () => http.post('/about/sync-github'),
+  getSyncLogs: () => http.get('/about/sync-logs'),
 }
 
 export const siteApi = {
