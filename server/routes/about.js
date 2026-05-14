@@ -22,9 +22,11 @@ router.get('/', (req, res) => {
     // 解析JSON字段
     try {
       config.skills = JSON.parse(config.skills || '[]');
+      config.timeline = JSON.parse(config.timeline || '[]');
       config.update_log = JSON.parse(config.update_log || '[]');
     } catch (e) {
       config.skills = [];
+      config.timeline = [];
       config.update_log = [];
     }
 
@@ -51,9 +53,11 @@ router.get('/admin', adminAuth, (req, res) => {
     // 解析JSON字段
     try {
       config.skills = JSON.parse(config.skills || '[]');
+      config.timeline = JSON.parse(config.timeline || '[]');
       config.update_log = JSON.parse(config.update_log || '[]');
     } catch (e) {
       config.skills = [];
+      config.timeline = [];
       config.update_log = [];
     }
 
@@ -76,6 +80,7 @@ router.put('/admin', adminAuth, (req, res) => {
     class_name,
     bio,
     skills,
+    timeline,
     github_url,
     email,
     wechat,
@@ -101,6 +106,7 @@ router.put('/admin', adminAuth, (req, res) => {
           class_name = ?,
           bio = ?,
           skills = ?,
+          timeline = ?,
           github_url = ?,
           email = ?,
           wechat = ?,
@@ -120,6 +126,7 @@ router.put('/admin', adminAuth, (req, res) => {
         class_name || '',
         bio || '',
         JSON.stringify(skills || []),
+        JSON.stringify(timeline || []),
         github_url || '',
         email || '',
         wechat || '',
@@ -134,8 +141,8 @@ router.put('/admin', adminAuth, (req, res) => {
       db.prepare(`
         INSERT INTO about_page (
           is_enabled, name, avatar, school_name, school_code, major, class_name,
-          bio, skills, github_url, email, wechat, qq, update_log, auto_sync_github, github_repo
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          bio, skills, timeline, github_url, email, wechat, qq, update_log, auto_sync_github, github_repo
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         is_enabled !== undefined ? (is_enabled ? 1 : 0) : 1,
         name || '开发者',
@@ -146,6 +153,7 @@ router.put('/admin', adminAuth, (req, res) => {
         class_name || '',
         bio || '',
         JSON.stringify(skills || []),
+        JSON.stringify(timeline || []),
         github_url || '',
         email || '',
         wechat || '',

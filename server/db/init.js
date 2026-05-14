@@ -390,6 +390,7 @@ db.exec(`
     class_name TEXT DEFAULT '',
     bio TEXT DEFAULT '',
     skills TEXT DEFAULT '[]',
+    timeline TEXT DEFAULT '[]',
     github_url TEXT DEFAULT '',
     email TEXT DEFAULT '',
     wechat TEXT DEFAULT '',
@@ -403,6 +404,14 @@ db.exec(`
   )
 `);
 console.log('[DB] about_page 表已创建/验证');
+
+// 迁移：为已存在的about_page表添加timeline字段
+try {
+  db.exec('ALTER TABLE about_page ADD COLUMN timeline TEXT DEFAULT \'[]\'');
+  console.log('[DB] about_page.timeline 字段已添加');
+} catch (e) {
+  // 字段可能已存在时忽略错误
+}
 
 // GitHub同步备份记录表
 db.exec(`
@@ -420,20 +429,107 @@ db.exec(`
 `);
 console.log('[DB] github_sync_logs 表已创建/验证');
 
+// 时间线类型配置表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS timeline_types (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type_key TEXT UNIQUE NOT NULL,
+    label TEXT NOT NULL,
+    icon TEXT DEFAULT 'Clock',
+    color TEXT DEFAULT '#409eff',
+    tag_type TEXT DEFAULT 'default',
+    sort_order INTEGER DEFAULT 0,
+    is_system INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+console.log('[DB] timeline_types 表已创建/验证');
+
+// 初始化默认时间线类型
+const typeCount = db.prepare('SELECT COUNT(*) as cnt FROM timeline_types').get();
+if (typeCount.cnt === 0) {
+  const defaultTypes = [
+    { type_key: 'current', label: '工作', icon: 'OfficeBuilding', color: '#67c23a', tag_type: 'success', sort_order: 1, is_system: 1 },
+    { type_key: 'project', label: '项目', icon: 'Collection', color: '#e6a23c', tag_type: 'warning', sort_order: 2, is_system: 1 },
+    { type_key: 'graduate', label: '毕业', icon: 'Medal', color: '#909399', tag_type: 'info', sort_order: 3, is_system: 1 },
+    { type_key: 'club', label: '社团', icon: 'UserFilled', color: '#f56c6c', tag_type: 'danger', sort_order: 4, is_system: 1 },
+    { type_key: 'school', label: '入学', icon: 'School', color: '#409eff', tag_type: 'default', sort_order: 5, is_system: 1 }
+  ];
+
+  const insertStmt = db.prepare(`
+    INSERT INTO timeline_types (type_key, label, icon, color, tag_type, sort_order, is_system)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const t of defaultTypes) {
+    insertStmt.run(t.type_key, t.label, t.icon, t.color, t.tag_type, t.sort_order, t.is_system);
+  }
+  console.log('[DB] 默认时间线类型已创建');
+}
+
 // 初始化关于我页面默认数据
 const aboutExists = db.prepare('SELECT id FROM about_page LIMIT 1').get();
 if (!aboutExists) {
+  const defaultTimeline = [
+    {
+      id: 'default-1',
+      type: 'current',
+      date: '现在',
+      status: '进行中',
+      title: '学校后勤老师',
+      description: '在某学校担任后勤老师，负责学校基础设施维护与技术支持工作',
+      tags: []
+    },
+    {
+      id: 'default-2',
+      type: 'project',
+      date: '2024年',
+      status: '开源项目',
+      title: 'MuYunAPI 开源项目',
+      description: '开发并开源了全栈API聚合管理平台，支持内置接口、外部代理、多版本管理、主题切换等功能',
+      tags: ['全栈开发', 'Vue3', 'Node.js']
+    },
+    {
+      id: 'default-3',
+      type: 'graduate',
+      date: '2025年6月',
+      status: '毕业',
+      title: '顺利毕业',
+      description: '完成计算机网络技术专业学习，获得毕业证书',
+      tags: []
+    },
+    {
+      id: 'default-4',
+      type: 'club',
+      date: '在校期间',
+      status: '社团创始人',
+      title: '创立计算机维修社团',
+      description: '在校期间创立计算机维修社团，带领团队为各班级和其他社团提供电脑维修服务，积累了丰富的实践经验',
+      tags: ['社团创始人', '技术服务', '团队管理']
+    },
+    {
+      id: 'default-5',
+      type: 'school',
+      date: '2022年9月',
+      status: '入学',
+      title: '就读普宁职业技术学校',
+      description: '计算机网络技术专业 | 招生代码：8800587',
+      tags: []
+    }
+  ];
+
   db.prepare(`
     INSERT INTO about_page (
-      name, school_name, school_code, major, bio, 
+      name, school_name, school_code, major, bio, timeline,
       github_url, update_log, auto_sync_github, github_repo
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     'MuYunAPI 开发者',
     '普宁职业技术学校',
     '8800587',
     '计算机网络技术',
     '热爱开源，专注于API聚合与分享平台的开发',
+    JSON.stringify(defaultTimeline),
     'https://github.com/zy2270561173/muyunapi',
     JSON.stringify([
       { version: 'v1.2.0', date: '2026-05-14', content: '新增API版本管理、Markdown编辑器、主题系统重构' },

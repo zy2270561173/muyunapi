@@ -71,6 +71,11 @@ export const adminApi = {
   updateAboutConfig: (data) => http.put('/about/admin', data),
   syncGitHub: () => http.post('/about/sync-github'),
   getSyncLogs: () => http.get('/about/sync-logs'),
+  // 时间线类型管理
+  getTimelineTypes: () => http.get('/timeline-types'),
+  createTimelineType: (data) => http.post('/timeline-types', data),
+  updateTimelineType: (id, data) => http.put(`/timeline-types/${id}`, data),
+  deleteTimelineType: (id) => http.delete(`/timeline-types/${id}`),
 }
 
 export const siteApi = {

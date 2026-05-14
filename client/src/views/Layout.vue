@@ -11,7 +11,7 @@
         <nav class="nav-links">
           <router-link to="/" exact-active-class="active">首页</router-link>
           <router-link to="/explore" active-class="active">浏览接口</router-link>
-          <router-link to="/about" active-class="active">关于我</router-link>
+          <router-link v-if="aboutEnabled" to="/about" active-class="active">关于我</router-link>
           <router-link v-if="userStore.isAdmin" to="/admin" active-class="active" class="admin-link">
             <el-icon><Setting /></el-icon> 管理后台
           </router-link>
@@ -121,6 +121,7 @@
         <div class="footer-links">
           <router-link to="/">首页</router-link>
           <router-link to="/explore">浏览接口</router-link>
+          <router-link v-if="aboutEnabled" to="/about">关于我</router-link>
         </div>
         <!-- 友链 -->
         <div class="friendships" v-if="friendships.length">
@@ -146,6 +147,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { useThemeStore } from '../stores/theme'
 import { siteApi, friendshipApi } from '../api'
+import axios from 'axios'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -155,6 +157,7 @@ const siteInfo = ref({})
 const friendships = ref([])
 const showImportDialog = ref(false)
 const importJson = ref('')
+const aboutEnabled = ref(true)
 
 const avatarUrl = computed(() => {
   const av = userStore.userInfo?.avatar
@@ -195,6 +198,16 @@ function handleImportTheme() {
   }
 }
 
+// 检查关于我页面状态
+async function checkAboutStatus() {
+  try {
+    const res = await axios.get('/api/about')
+    aboutEnabled.value = res.data.code === 200
+  } catch (e) {
+    aboutEnabled.value = false
+  }
+}
+
 const scrollHandler = () => { scrolled.value = window.scrollY > 20 }
 
 onMounted(async () => {
@@ -208,6 +221,8 @@ onMounted(async () => {
     const res = await friendshipApi.getList()
     if (res.code === 200) friendships.value = res.data || []
   } catch (e) {}
+  // 检查关于我页面状态
+  await checkAboutStatus()
 })
 
 onUnmounted(() => {

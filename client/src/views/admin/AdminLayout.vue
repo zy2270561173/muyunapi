@@ -49,6 +49,10 @@
           <el-icon><List /></el-icon>
           <template #title>调用日志</template>
         </el-menu-item>
+        <el-menu-item index="/admin/about">
+          <el-icon><UserFilled /></el-icon>
+          <template #title>关于我</template>
+        </el-menu-item>
         <el-menu-item index="/admin/settings">
           <el-icon><Setting /></el-icon>
           <template #title>系统设置</template>
@@ -107,6 +111,23 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import {
+  Odometer,
+  Connection,
+  Grid,
+  User,
+  Bell,
+  Brush,
+  Box,
+  Link,
+  List,
+  Setting,
+  House,
+  Expand,
+  Fold,
+  ArrowDown,
+  UserFilled
+} from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
 
 const route = useRoute()
