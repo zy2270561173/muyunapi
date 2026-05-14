@@ -9,6 +9,7 @@ pnpm-lock.yaml
 dist/
 build/
 *.tgz
+*.zip
 
 # Database
 *.db
