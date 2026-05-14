@@ -53,3 +53,7 @@ temp/
 
 # OS
 Thumbs.db
+
+# AI tools
+.codebuddy/
+.workbuddy/
