@@ -7,7 +7,9 @@
     "start": "cd server && npm start",
     "dev": "cd server && npm run dev",
     "update": "node scripts/update.js",
-    "update:check": "node scripts/update.js --check"
+    "update:check": "node scripts/update.js --check",
+    "update:build": "node scripts/build-update.js",
+    "update:upload": "node scripts/upload-update.js"
   },
   "repository": {
     "type": "git",

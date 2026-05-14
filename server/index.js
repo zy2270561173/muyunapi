@@ -1,9 +1,13 @@
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+// 信任代理（解决 express-rate-limit 在反向代理下的警告）
+app.set('trust proxy', 1);
 
 // 初始化数据库
 require('./db/init');

@@ -225,15 +225,228 @@ cd client && npm run dev
 | 密码 | `admin123456` |
 | 邮箱 | `admin@muyunapi.com` |
 
-### 6. 生产部署
+### 6. 生产部署（Windows）
 
 ```bash
-# 构建前端
-cd client && npm run build
+# 启动主服务和更新服务器（自动守护）
+node start.js
 
-# 启动后端（自动托管前端静态文件）
-cd server && npm start
+# 或单独启动更新服务器
+node update_start.js
 ```
+
+> [!TIP]
+> `start.js` 会自动检测 PM2 环境。有 PM2 时委托 PM2 管理；无 PM2 时自身作为守护进程启动。
+
+---
+
+## 🖥 服务器部署指南
+
+### 系统架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        用户访问                              │
+│                    https://api.example.com                   │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+         ┌─────────────┴─────────────┐
+         │                           │
+    ┌────▼────┐               ┌──────▼──────┐
+    │ 主服务  │◄──HTTPS──────│   Nginx     │
+    │  :3000  │               │   443端口    │
+    └────┬────┘               └─────────────┘
+         │ HTTP (内网)
+    ┌────▼────┐
+    │更新服务器│
+    │  :3001  │
+    └─────────┘
+```
+
+| 组件 | 端口 | 说明 | PM2进程名 |
+|------|------|------|-----------|
+| **主服务** | 3000 | 前台+后台+API代理 | `muyu-server` |
+| **更新服务器** | 3001 | 更新包管理、版本检测 | `muyu-update` |
+
+### 热重载机制
+
+| 退出码 | 含义 | 触发场景 |
+|--------|------|----------|
+| `42` | 仅重启自身 | 主服务普通更新 |
+| `43` | 重启自身 + 通知更新服务器 | 更新包包含 `includesUpdateServer=true` |
+
+PM2 监听子进程退出码，自动重启进程，实现无缝热重载。
+
+---
+
+### Linux 部署（推荐）
+
+#### 前置要求
+
+```bash
+# 安装 Node.js 18+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 安装 PM2（热重载核心依赖）
+sudo npm install -g pm2
+
+# 配置开机自启
+sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER
+```
+
+#### 部署步骤
+
+**1. 上传项目**
+
+```bash
+# 在服务器创建目录
+mkdir -p /var/www/muyunapi && cd /var/www/muyunapi
+
+# 通过 SCP / SFTP / Git 上传项目文件
+# 注意：不要上传 node_modules、.workbuddy、dist/ 等目录
+```
+
+**2. 配置环境变量**
+
+```bash
+# 主服务
+cp server/.env.example server/.env
+nano server/.env   # 填入实际值
+```
+
+`server/.env` 必填项：
+
+```bash
+# JWT 密钥（必须修改，建议64位随机字符串）
+JWT_SECRET=你的64位随机密钥
+
+# 热重载共享密钥（主服务通知更新服务器时使用）
+UPDATE_SECRET=你的32位随机密钥
+
+# 管理员账号
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=YourSecurePassword123
+
+# 内部更新服务器地址（若更新服务器不在本机，修改为实际IP）
+INTERNAL_UPDATE_SERVER_URL=http://localhost:3001
+```
+
+```bash
+# 更新服务器
+cp update-server/.env.example update-server/.env
+nano update-server/.env   # 填入实际值（JWT_SECRET 和 UPDATE_SECRET 必须与主服务一致）
+```
+
+**3. 启动服务**
+
+```bash
+# 赋予执行权限
+chmod +x start.sh update_start.sh
+
+# 一键启动（自动检查依赖 + 构建前端 + 启动服务）
+./start.sh
+
+# 或跳过构建快速启动
+./start.sh --no-build
+```
+
+**4. 配置 Nginx 反向代理**
+
+```nginx
+# /etc/nginx/sites-available/muyunapi
+server {
+    listen 443 ssl http2;
+    server_name api.example.com;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    # 主服务
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+# 重载 Nginx
+sudo ln -s /etc/nginx/sites-available/muyunapi /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+#### PM2 常用命令
+
+```bash
+pm2 list                    # 查看进程状态
+pm2 logs                    # 查看所有日志
+pm2 logs muyu-server        # 查看主服务日志
+pm2 logs muyu-update        # 查看更新服务器日志
+pm2 restart all             # 重启所有服务
+pm2 restart muyu-server     # 重启主服务
+pm2 restart muyu-update     # 重启更新服务器
+pm2 stop all                # 停止所有服务
+pm2 delete all              # 删除所有进程
+pm2 save                    # 保存当前进程列表
+```
+
+---
+
+### Windows 部署
+
+#### 部署步骤
+
+**1. 配置环境变量**
+
+编辑 `server/.env` 和 `update-server/.env`，填入实际值。
+
+**2. 启动服务**
+
+```batch
+:: 双击或命令行运行
+node start.js
+
+:: 或单独启动更新服务器
+node update_start.js
+```
+
+**3. 配置 Nginx（可选）**
+
+与 Linux 相同，配置反向代理到 `http://127.0.0.1:3000`。
+
+---
+
+### 更新部署流程
+
+#### 本地打包更新包
+
+```bash
+# 普通更新（仅主程序）
+npm run build:update -- --version=1.2.3 --platform=linux --arch=x64
+
+# 包含更新服务器的完整更新
+npm run build:update -- --version=1.2.3 --platform=linux --arch=x64 --include-update-server
+```
+
+> [!NOTE]
+> `--include-update-server` 参数会将 `update-server/` 整个目录打入 ZIP，更新包解压后会同时更新两个服务。
+
+#### 上传到更新服务器
+
+1. 将 `dist/muyunapi-v1.2.3-linux-x64.zip` 上传到更新服务器的 `packages/` 目录
+2. 或通过更新服务器管理后台上传
+
+#### 自动热重载
+
+更新包下载并应用后：
+- 主服务自动检测 `includesUpdateServer` 字段
+- 若为 `true`，通过 HTTP POST 通知更新服务器重启
+- 两边同时热重载，无需手动操作
 
 ---
 
