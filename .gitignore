@@ -50,6 +50,7 @@ coverage/
 tmp/
 temp/
 *.tmp
+server/update.json
 
 # OS
 Thumbs.db

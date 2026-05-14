@@ -61,6 +61,7 @@ router.post('/check', (req, res) => {
       data: {
         hasUpdate: true,
         forceUpdate,
+        packageId: latest.id,
         version: latest.version,
         versionCode: latest.version_code,
         downloadUrl: `/api/packages/download/${latest.id}`,
@@ -108,11 +109,15 @@ router.get('/download/:id', (req, res) => {
     // 增加下载计数
     prepare('UPDATE packages SET download_count = download_count + 1 WHERE id = ?').run(id);
     
-    // 发送文件
+    // 发送文件（禁用任何压缩，确保文件原始字节与上传时一致）
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${pkg.filename}"`);
     res.setHeader('Content-Length', pkg.size);
-    
+    res.setHeader('Content-MD5', pkg.checksum_md5); // 让客户端可自行验证
+    // 强制不压缩
+    res.setHeader('Content-Encoding', 'identity');
+    res.removeHeader('Transfer-Encoding');
+
     const stream = fs.createReadStream(filePath);
     stream.pipe(res);
   } catch (e) {
@@ -253,6 +258,77 @@ router.patch('/:id/toggle', authMiddleware, (req, res) => {
     });
   } catch (e) {
     res.json({ code: 500, message: '操作失败' });
+  }
+});
+
+// 验证更新包（接收文件流，实时计算 MD5 与数据库比对）
+router.post('/verify/:id', (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const pkg = prepare('SELECT * FROM packages WHERE id = ?').get(id);
+    if (!pkg) {
+      return res.status(404).json({ code: 404, message: '更新包不存在' });
+    }
+
+    const expectedMd5 = pkg.checksum_md5;
+    const expectedSize = pkg.size;
+
+    // 实时计算文件 MD5
+    const hash = crypto.createHash('md5');
+    let actualSize = 0;
+
+    // 分块读取，避免大文件内存溢出
+    const filePath = path.join(PACKAGES_DIR, pkg.filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ code: 404, message: '文件不存在' });
+    }
+
+    const stream = fs.createReadStream(filePath);
+
+    stream.on('data', (chunk) => {
+      hash.update(chunk);
+      actualSize += chunk.length;
+    });
+
+    stream.on('end', () => {
+      const actualMd5 = hash.digest('hex');
+
+      const sizeMatch = actualSize === expectedSize;
+      const md5Match = actualMd5 === expectedMd5;
+
+      if (sizeMatch && md5Match) {
+        res.json({
+          code: 200,
+          valid: true,
+          message: '文件完整，校验通过',
+          data: {
+            size: { expected: expectedSize, actual: actualSize, match: sizeMatch },
+            md5: { expected: expectedMd5, actual: actualMd5, match: md5Match }
+          }
+        });
+      } else {
+        res.json({
+          code: 200,
+          valid: false,
+          message: sizeMatch
+            ? 'MD5 不匹配，文件可能损坏'
+            : `大小不匹配（期望 ${expectedSize} 字节，实际 ${actualSize} 字节）`,
+          data: {
+            size: { expected: expectedSize, actual: actualSize, match: sizeMatch },
+            md5: { expected: expectedMd5, actual: actualMd5, match: md5Match }
+          }
+        });
+      }
+    });
+
+    stream.on('error', (e) => {
+      console.error('[verify] 读取文件失败:', e);
+      res.status(500).json({ code: 500, message: '校验失败：文件读取错误' });
+    });
+  } catch (e) {
+    console.error('[verify] 校验失败:', e);
+    res.status(500).json({ code: 500, message: '校验失败' });
   }
 });
 

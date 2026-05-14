@@ -203,8 +203,8 @@ if (!adminExists) {
   const uid = uuidv4().replace(/-/g, '').substring(0, 12).toUpperCase();
   const apiKey = 'mk_' + nanoid(32);
   const apiSecret = 'ms_' + nanoid(48);
-  db.prepare(`INSERT INTO users (uid, username, email, password, nickname, role, api_key, api_secret, email_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`)
-    .run(uid, 'admin', 'admin@muyunapi.com', hash, '超级管理员', 'admin', apiKey, apiSecret);
+  db.prepare(`INSERT INTO users (uid, username, email, password, nickname, role, api_key, api_secret, email_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(uid, 'admin', 'admin@muyunapi.com', hash, '超级管理员', 'admin', apiKey, apiSecret, 1);
   console.log('[DB] 默认管理员已创建 admin/admin123456');
 }
 

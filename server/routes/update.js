@@ -108,12 +108,18 @@ router.get('/version', adminAuth, async (req, res) => {
     const packageJson = require(path.join(process.cwd(), 'package.json'));
     
     let commitHash = '';
-    try {
-      commitHash = execSync('git rev-parse --short HEAD', { 
-        cwd: process.cwd(),
-        encoding: 'utf8'
-      }).trim();
-    } catch (e) {
+    // 非 git 仓库环境静默跳过，不输出错误
+    if (fs.existsSync(path.join(process.cwd(), '.git'))) {
+      try {
+        commitHash = execSync('git rev-parse --short HEAD', {
+          cwd: process.cwd(),
+          encoding: 'utf8',
+          stdio: 'pipe'
+        }).trim();
+      } catch (e) {
+        commitHash = 'unknown';
+      }
+    } else {
       commitHash = 'unknown';
     }
 
@@ -206,7 +212,7 @@ router.post('/check', adminAuth, async (req, res) => {
   }
 });
 
-// 下载更新
+// 下载更新（下载后自动读取 zip 内的 update.json）
 router.post('/download', adminAuth, async (req, res) => {
   try {
     const { updateInfo } = req.body;
@@ -216,13 +222,23 @@ router.post('/download', adminAuth, async (req, res) => {
       console.log(`下载进度: ${progress}% (${downloaded}/${total})`);
     });
 
+    // 下载完成后，读取 zip 内的 update.json 预览数据
+    let previewData = null;
+    try {
+      previewData = await updateClient.previewZip(result.filePath);
+    } catch (previewErr) {
+      console.warn('[Update] 读取更新包预览失败:', previewErr.message);
+      // 预览失败不影响主流程
+    }
+
     res.json({
       code: 200,
       message: '下载完成',
       data: {
         filePath: result.filePath,
         version: result.version,
-        size: result.size
+        size: result.size,
+        preview: previewData
       }
     });
   } catch (e) {
@@ -271,8 +287,13 @@ router.post('/apply', adminAuth, async (req, res) => {
 
     // 延迟确保所有响应都发完
     setTimeout(() => {
-      console.log('[Update] 主服务热重载（退出码 42）...');
-      process.exit(42);
+      console.log('[Update] 主服务热重载...');
+      try {
+        execSync('pm2 restart MuYunAPI-Main', { stdio: 'ignore' });
+      } catch (_) {
+        // pm2 不在 PATH 时回退到直接退出
+        process.exit(42);
+      }
     }, 800);
 
     res.json({

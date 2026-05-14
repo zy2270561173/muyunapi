@@ -129,7 +129,7 @@ class UpdateClient {
    * 下载更新包
    */
   async downloadUpdate(updateInfo, onProgress) {
-    const { downloadUrl, version, checksum } = updateInfo;
+    const { downloadUrl, version, checksum, packageId } = updateInfo;
     const fullUrl = `${this.serverUrl}${downloadUrl}?version=${this.currentVersion}`;
     const filename = `update-v${version}-${this.platform}-${this.arch}.zip`;
     const filePath = path.join(this.downloadDir, filename);
@@ -141,7 +141,7 @@ class UpdateClient {
         if (res.statusCode === 301 || res.statusCode === 302) {
           // 处理重定向
           const redirectUrl = res.headers.location;
-          this.downloadFromUrl(redirectUrl, filePath, checksum, onProgress)
+          this.downloadFromUrl(redirectUrl, filePath, checksum, onProgress, packageId)
             .then(resolve)
             .catch(reject);
           return;
@@ -166,16 +166,22 @@ class UpdateClient {
           }
         });
 
-        res.on('end', () => {
+        res.on('end', async () => {
           fileStream.end();
           
-          // 验证校验和
-          if (checksum && checksum.md5) {
-            const fileMd5 = this.calculateMd5(filePath);
-            if (fileMd5 !== checksum.md5) {
-              fs.unlinkSync(filePath);
-              reject(new Error('文件校验失败，请重新下载'));
-              return;
+          // 调用更新端 API 进行服务端校验
+          if (packageId) {
+            try {
+              const verifyResult = await this.verifyFileWithServer(filePath, packageId);
+              if (!verifyResult.valid) {
+                fs.unlinkSync(filePath);
+                reject(new Error(`文件校验失败：${verifyResult.message}`));
+                return;
+              }
+              console.log(`[Update] ✅ 文件校验通过（服务端）: ${verifyResult.data.md5.actual}`);
+            } catch (e) {
+              // 校验失败才阻止（网络错误等只警告）
+              console.warn(`[Update] ⚠️ 服务端校验异常: ${e.message}，将跳过服务端校验`);
             }
           }
           
@@ -188,7 +194,7 @@ class UpdateClient {
 
         res.on('error', (err) => {
           fileStream.destroy();
-          fs.unlinkSync(filePath);
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
           reject(err);
         });
       });
@@ -204,7 +210,7 @@ class UpdateClient {
   /**
    * 从URL下载（处理重定向）
    */
-  downloadFromUrl(url, filePath, checksum, onProgress) {
+  downloadFromUrl(url, filePath, checksum, onProgress, packageId) {
     return new Promise((resolve, reject) => {
       const client = url.startsWith('https') ? https : http;
       
@@ -223,18 +229,24 @@ class UpdateClient {
           }
         });
 
-        res.on('end', () => {
+        res.on('end', async () => {
           fileStream.end();
           
-          if (checksum && checksum.md5) {
-            const fileMd5 = this.calculateMd5(filePath);
-            if (fileMd5 !== checksum.md5) {
-              fs.unlinkSync(filePath);
-              reject(new Error('文件校验失败'));
-              return;
+          // 调用更新端 API 进行服务端校验
+          if (packageId) {
+            try {
+              const verifyResult = await this.verifyFileWithServer(filePath, packageId);
+              if (!verifyResult.valid) {
+                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                reject(new Error(`文件校验失败：${verifyResult.message}`));
+                return;
+              }
+              console.log(`[Update] ✅ 文件校验通过（服务端）: ${verifyResult.data.md5.actual}`);
+            } catch (e) {
+              console.warn(`[Update] ⚠️ 服务端校验异常: ${e.message}，将跳过服务端校验`);
             }
           }
-          
+
           resolve({
             filePath,
             size: downloadedSize
@@ -243,7 +255,7 @@ class UpdateClient {
 
         res.on('error', (err) => {
           fileStream.destroy();
-          fs.unlinkSync(filePath);
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
           reject(err);
         });
       });
@@ -253,6 +265,90 @@ class UpdateClient {
         req.destroy();
         reject(new Error('下载超时'));
       });
+    });
+  }
+
+  /**
+   * 预览更新包内容（下载后、解压安装前读取 update.json）
+   * @param {string} filePath - zip 文件路径
+   * @returns {Promise<object>} update.json 内容
+   */
+  previewZip(filePath) {
+    return new Promise((resolve, reject) => {
+      try {
+        const AdmZip = (() => { try { return require('adm-zip'); } catch (_) { return null; } })();
+        if (!AdmZip) {
+          reject(new Error('adm-zip 模块未安装'));
+          return;
+        }
+
+        const zip = new AdmZip(filePath);
+        const entry = zip.getEntry('update.json');
+        if (!entry) {
+          reject(new Error('更新包内未找到 update.json'));
+          return;
+        }
+
+        const content = entry.getData().toString('utf8');
+        const data = JSON.parse(content);
+
+        resolve({
+          version: data.version || '',
+          versionCode: data.versionCode || 0,
+          platform: data.platform || this.platform,
+          arch: data.arch || this.arch,
+          channel: data.channel || this.channel,
+          changelog: data.changelog || { zh: [], en: [] },
+          releaseDate: data.releaseDate || new Date().toISOString().split('T')[0],
+          forceUpdate: data.forceUpdate || false,
+          breakingChanges: data.breakingChanges || false,
+          includesUpdateServer: data.includesUpdateServer || false,
+          files: data.files || []
+        });
+      } catch (e) {
+        reject(new Error('读取更新包预览失败: ' + e.message));
+      }
+    });
+  }
+
+  /**
+   * 调用更新端 API 验证文件完整性（服务端到服务端校验）
+   * @param {string} filePath - 本地文件路径
+   * @param {number} packageId - 更新包 ID
+   * @returns {Promise<object>} 校验结果
+   */
+  async verifyFileWithServer(filePath, packageId) {
+    return new Promise((resolve, reject) => {
+      const url = `${this.serverUrl}/api/packages/verify/${packageId}`;
+      const client = url.startsWith('https') ? https : http;
+
+      const req = client.request(url, {
+        method: 'POST',
+        timeout: 120000
+      }, (res) => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          try {
+            const result = JSON.parse(body);
+            if (result.code === 200) {
+              resolve(result);
+            } else {
+              reject(new Error(result.message || '校验失败'));
+            }
+          } catch (e) {
+            reject(new Error('解析校验响应失败'));
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('校验请求超时'));
+      });
+
+      req.end();
     });
   }
 
@@ -385,7 +481,22 @@ class UpdateClient {
       // 8. 清理临时文件
       this.cleanup(extractDir);
 
-      // 9. 如果需要重启
+      // 9. 更新 package.json 版本号，使前端显示与更新包一致
+      try {
+        const packageJsonPath = path.join(process.cwd(), 'package.json');
+        if (fs.existsSync(packageJsonPath)) {
+          const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+          if (updateConfig.version) {
+            pkg.version = updateConfig.version;
+            fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
+            console.log(`[Update] package.json 版本已更新为 ${updateConfig.version}`);
+          }
+        }
+      } catch (e) {
+        console.warn('[Update] 更新 package.json 版本失败:', e.message);
+      }
+
+      // 10. 如果需要重启
       if (restart) {
         console.log('更新完成，正在重启服务...');
         process.exit(0); // 由进程管理器重启
@@ -403,25 +514,31 @@ class UpdateClient {
   }
 
   /**
-   * 解压ZIP文件
+   * 解压ZIP文件（纯 Node.js 实现，跨平台兼容）
    */
   extractZip(zipPath, extractDir) {
     return new Promise((resolve, reject) => {
       try {
-        if (this.platform === 'win') {
-          // Windows使用PowerShell
-          execSync(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractDir}' -Force"`, {
-            stdio: 'ignore'
-          });
-        } else {
-          // Linux/Mac使用unzip
-          execSync(`unzip -o "${zipPath}" -d "${extractDir}"`, {
-            stdio: 'ignore'
-          });
+        let AdmZip;
+        try { AdmZip = require('adm-zip'); } catch (_) {
+          reject(new Error('adm-zip 模块未安装，请执行: npm install adm-zip'));
+          return;
         }
+
+        if (!fs.existsSync(zipPath)) {
+          reject(new Error('更新包文件不存在: ' + zipPath));
+          return;
+        }
+
+        if (!fs.existsSync(extractDir)) {
+          fs.mkdirSync(extractDir, { recursive: true });
+        }
+
+        const zip = new AdmZip(zipPath);
+        zip.extractAllTo(extractDir, true);
         resolve();
       } catch (e) {
-        reject(new Error('解压更新包失败'));
+        reject(new Error('解压更新包失败: ' + e.message));
       }
     });
   }

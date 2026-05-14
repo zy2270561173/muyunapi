@@ -54,57 +54,97 @@ function versionToCode(version) {
   return major * 10000 + minor * 100 + patch;
 }
 
+/**
+ * 从 zip 包内嵌的 update.json 读取元数据（后备数据）
+ * @param {string} filePath - zip 文件路径
+ * @returns {object|null} update.json 内容，解析失败返回 null
+ */
+function readZipUpdateJson(filePath) {
+  try {
+    // 动态加载 adm-zip
+    let AdmZip;
+    try { AdmZip = require('adm-zip'); } catch (_) { return null; }
+
+    const zip = new AdmZip(filePath);
+    const entry = zip.getEntry('update.json');
+    if (!entry) return null;
+
+    const content = entry.getData().toString('utf8');
+    return JSON.parse(content);
+  } catch (e) {
+    console.warn('[upload] 读取 zip 内嵌 update.json 失败:', e.message);
+    return null;
+  }
+}
+
 router.post('/', authMiddleware, upload.single('file'), (req, res) => {
   try {
-    const { version, channel, platform, arch, minVersion, forceUpdate, breakingChanges, changelogZh, changelogEn } = req.body;
-    
+    const { version: formVersion, channel: formChannel, platform: formPlatform, arch: formArch, minVersion: formMinVersion, forceUpdate: formForceUpdate, breakingChanges, changelogZh, changelogEn } = req.body;
+
     if (!req.file) {
       return res.json({ code: 400, message: '请上传更新包文件' });
     }
-    
+
+    // 尝试从 zip 内嵌的 update.json 读取元数据作为后备
+    const zipMeta = readZipUpdateJson(req.file.path);
+
+    // 优先使用表单数据，否则回退到 zip 内嵌数据
+    const version   = formVersion  || (zipMeta && zipMeta.version);
+    const channel   = formChannel || (zipMeta && zipMeta.channel) || 'stable';
+    const platform  = formPlatform || (zipMeta && zipMeta.platform);
+    const arch      = formArch     || (zipMeta && zipMeta.arch);
+    const minVersion = formMinVersion || (zipMeta && (zipMeta.minVersion || zipMeta.min_client_version)) || '0.0.0';
+    const forceUpdate = formForceUpdate === 'true'
+      ? true
+      : (formForceUpdate === 'false' ? false : !!(zipMeta && zipMeta.forceUpdate));
+
     if (!version || !platform || !arch) {
       fs.unlinkSync(req.file.path);
-      return res.json({ code: 400, message: '缺少必要参数' });
+      return res.json({ code: 400, message: '缺少必要参数（version/platform/arch）：请确保 zip 内嵌 update.json 包含这些字段，或通过表单提供' });
     }
-    
+
     const versionRegex = /^\d+\.\d+\.\d+$/;
     if (!versionRegex.test(version)) {
       fs.unlinkSync(req.file.path);
       return res.json({ code: 400, message: '版本号格式错误' });
     }
-    
+
     const checksums = calculateChecksums(req.file.path);
     const filename = `muyunapi-v${version}-${platform}-${arch}.zip`;
     const newPath = path.join(PACKAGES_DIR, filename);
-    
+
     if (fs.existsSync(newPath)) {
       fs.unlinkSync(newPath);
     }
     fs.renameSync(req.file.path, newPath);
-    
+
     const existing = prepare('SELECT id FROM packages WHERE version = ? AND platform = ? AND arch = ? AND channel = ?')
-      .get(version, platform, arch, channel || 'stable');
-    
-    const changelogZhParsed = changelogZh ? JSON.parse(changelogZh) : [];
-    const changelogEnParsed = changelogEn ? JSON.parse(changelogEn) : [];
-    
+      .get(version, platform, arch, channel);
+
+    // 合并更新日志：表单 > zip 内嵌
+    const zipChangelog = zipMeta && zipMeta.changelog ? zipMeta.changelog : {};
+    let changelogZhParsed = changelogZh ? JSON.parse(changelogZh) : [];
+    let changelogEnParsed = changelogEn ? JSON.parse(changelogEn) : [];
+    if (!changelogZhParsed.length) changelogZhParsed = Array.isArray(zipChangelog.zh) ? zipChangelog.zh : (Array.isArray(zipChangelog.zh_cn) ? zipChangelog.zh_cn : []);
+    if (!changelogEnParsed.length) changelogEnParsed = Array.isArray(zipChangelog.en) ? zipChangelog.en : [];
+
     if (existing) {
       prepare(`UPDATE packages SET filename=?, size=?, checksum_md5=?, checksum_sha256=?, min_version=?, force_update=?, breaking_changes=?, changelog_zh=?, changelog_en=?, release_date=? WHERE id=?`)
-        .run(filename, req.file.size, checksums.md5, checksums.sha256, minVersion || '0.0.0',
-          forceUpdate === 'true' ? 1 : 0, breakingChanges === 'true' ? 1 : 0,
+        .run(filename, req.file.size, checksums.md5, checksums.sha256, minVersion,
+          forceUpdate ? 1 : 0, breakingChanges === 'true' ? 1 : 0,
           JSON.stringify(changelogZhParsed), JSON.stringify(changelogEnParsed),
           new Date().toISOString().split('T')[0], existing.id);
-      
-      res.json({ code: 200, message: '更新包已更新', data: { id: existing.id, version, platform, arch, channel: channel || 'stable', size: req.file.size, checksum: checksums } });
+
+      res.json({ code: 200, message: '更新包已更新', data: { id: existing.id, version, platform, arch, channel, size: req.file.size, checksum: checksums } });
     } else {
       const result = prepare(`INSERT INTO packages (version, version_code, channel, platform, arch, filename, size, checksum_md5, checksum_sha256, min_version, force_update, breaking_changes, changelog_zh, changelog_en, release_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        .run(version, versionToCode(version), channel || 'stable', platform, arch, filename, req.file.size,
-          checksums.md5, checksums.sha256, minVersion || '0.0.0',
-          forceUpdate === 'true' ? 1 : 0, breakingChanges === 'true' ? 1 : 0,
+        .run(version, versionToCode(version), channel, platform, arch, filename, req.file.size,
+          checksums.md5, checksums.sha256, minVersion,
+          forceUpdate ? 1 : 0, breakingChanges === 'true' ? 1 : 0,
           JSON.stringify(changelogZhParsed), JSON.stringify(changelogEnParsed),
           new Date().toISOString().split('T')[0]);
-      
-      res.json({ code: 200, message: '更新包上传成功', data: { id: result.lastId || 0, version, platform, arch, channel: channel || 'stable', size: req.file.size, checksum: checksums } });
+
+      res.json({ code: 200, message: '更新包上传成功', data: { id: result.lastId || 0, version, platform, arch, channel, size: req.file.size, checksum: checksums } });
     }
   } catch (e) {
     console.error('[upload] 上传失败:', e);

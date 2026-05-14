@@ -8,6 +8,7 @@ const cors = require('cors');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
+const { execSync } = require('child_process');
 const { initDatabase } = require('./db/init');
 
 const app = express();
@@ -70,10 +71,16 @@ app.post('/api/admin/restart', (req, res) => {
     }
   }
 
-  console.log('[UpdateServer] 收到热重载信号（退出码 42），正在重启...');
+  console.log('[UpdateServer] 收到热重载信号，正在重启...');
   res.json({ code: 200, message: '收到重启信号，正在热重载...' });
 
-  setTimeout(() => process.exit(42), 500);
+  setTimeout(() => {
+    try {
+      execSync('pm2 restart MuYunAPI-Update', { stdio: 'ignore' });
+    } catch (_) {
+      process.exit(42);
+    }
+  }, 500);
 });
 
 // ─── 页面路由 ───
@@ -83,7 +90,7 @@ app.get('/login', (req, res) => {
   res.render('login', { title: '登录 - MuYunAPI 更新服务器' });
 });
 
-// 管理后台首页 - 直接渲染，token 验证交给前端
+// 管理后台首页
 app.get('/', (req, res) => {
   const proto = req.protocol;
   const host = req.get('host');
@@ -94,7 +101,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// 通配路由 - 所有非 API、非静态资源的 GET 请求都返回管理后台（支持前端路由）
+// 通配路由
 app.get('*', (req, res) => {
   const proto = req.protocol;
   const host = req.get('host');
@@ -115,14 +122,17 @@ app.use((err, req, res, next) => {
   }
 });
 
-// 启动服务器
+// ─── 启动服务器与优雅退出逻辑 ───
 const PORT = process.env.PORT || 3001;
+
+// 将 server 实例保存下来，用于优雅关闭
+let server;
 
 async function start() {
   try {
     await initDatabase();
 
-    app.listen(PORT, '0.0.0.0', () => {
+    server = app.listen(PORT, '0.0.0.0', () => {
       console.log('\n🚀 MuYunAPI 更新服务器已启动');
       console.log(`   端口: ${PORT}`);
       console.log(`   监听: 0.0.0.0:${PORT}`);
@@ -135,4 +145,37 @@ async function start() {
   }
 }
 
+// 优雅退出处理函数
+function gracefulShutdown(signal) {
+  console.log(`\n🛑 收到退出信号 (${signal})，正在优雅关闭 HTTP 服务器...`);
+  
+  if (!server) return process.exit(0);
+
+  // 停止接收新请求，并关闭现有连接
+  server.close((err) => {
+    if (err) {
+      console.error('❌ 关闭服务器时发生错误:', err);
+      process.exit(1);
+    }
+    console.log('✅ HTTP 服务器已完全关闭，进程即将退出。');
+    process.exit(0);
+  });
+
+  // 兜底方案：如果 10 秒后还没关闭成功，强制退出（防止死锁）
+  setTimeout(() => {
+    console.error('⚠️ 强制关闭超时，正在强制终止进程...');
+    process.exit(1);
+  }, 10000);
+}
+
+// 监听标准退出信号（PM2 stop/restart 会触发这些）
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// 监听未捕获的异常，防止 PM2 频繁崩溃重启
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// 启动程序
 start();

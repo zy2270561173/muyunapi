@@ -1,7 +1,6 @@
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const { execSync } = require('child_process');
 
 const rootDir = path.resolve(__dirname);
 const updateServerDir = path.join(rootDir, 'update-server');
@@ -49,28 +48,6 @@ async function main() {
   log.info('╔══════════════════════════════════════════╗');
   log.info('║     MuYunAPI 更新服务器启动脚本          ║');
   log.info('╚══════════════════════════════════════════╝');
-  console.log('');
-
-  // ── 启动前释放 3001 端口（防止 EADDRINUSE）─────────
-  log.info('→ 检查端口占用...');
-  try {
-    // 尝试读取当前监听 3001 的进程 PID 并杀死
-    const pidOut = execSync(
-      'lsof -ti:3001 || fuser 3001/tcp 2>/dev/null || echo ""',
-      { encoding: 'utf8', stdio: 'pipe', cwd: updateServerDir }
-    ).trim();
-    if (pidOut) {
-      log.warn(`   端口 3001 被进程 ${pidOut} 占用，正在释放...`);
-      try { execSync(`kill -9 ${pidOut}`, { stdio: 'ignore' }); } catch (_) {}
-      await sleep(1000);
-      log.ok('   ✓ 端口已释放');
-    } else {
-      log.ok('   ✓ 端口 3001 可用');
-    }
-  } catch (_) {
-    // lsof/fuser 不存在时跳过（Windows 环境）
-    log.warn('   ⚠ 无法检测端口占用（非 Linux 环境跳过）');
-  }
   console.log('');
 
   // 检查依赖

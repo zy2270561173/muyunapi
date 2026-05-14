@@ -1,0 +1,24 @@
+{
+  "version": "1.2.4",
+  "channel": "stable",
+  "platform": "nodejs",
+  "arch": "any",
+  "minVersion": "1.0.0",
+  "forceUpdate": false,
+  "changelog": {
+    "zh": [
+      "优化前端构建产物",
+      "修复上传页面 zip 内嵌 update.json 自动读取",
+      "新增服务端文件完整性校验接口",
+      "优化 PM2 热重载机制",
+      "修复解压模块稳定性"
+    ],
+    "en": [
+      "Optimized frontend build output",
+      "Fixed zip embedded update.json auto-read in upload page",
+      "Added server-side file integrity verification API",
+      "Optimized PM2 hot-reload mechanism",
+      "Fixed extract module stability"
+    ]
+  }
+}

@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const fs = require('fs');
 
 const app = express();
 
@@ -55,8 +56,9 @@ app.get('/api/announcements/popup', (req, res) => {
   const db = require('./db/init');
   // 获取最近一条未读弹窗公告（前端记录已弹过的公告ID）
   const lastId = parseInt(req.query.last_id) || 0;
-  const list = db.prepare("SELECT * FROM announcements WHERE is_active = 1 AND type IN ('popup', 'both') AND id > ? ORDER BY id ASC LIMIT 1").all(lastId);
-  res.json({ code: 200, data: list });
+  // 修复：获取单条数据应使用 .get()
+  const data = db.prepare("SELECT * FROM announcements WHERE is_active = 1 AND type IN ('popup', 'both') AND id > ? ORDER BY id ASC LIMIT 1").get(lastId);
+  res.json({ code: 200, data: data });
 });
 
 // 站点信息
@@ -73,7 +75,6 @@ app.get('/api/site-info', (req, res) => {
 
 // 静态文件 (前端打包后)
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
-const fs = require('fs');
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
   app.get(/^(?!\/api).*$/, (req, res) => {
@@ -81,13 +82,50 @@ if (fs.existsSync(clientDist)) {
   });
 }
 
+// ─── 启动服务器与优雅退出逻辑 ───
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+
+// 将 server 实例保存下来，用于优雅关闭
+let server;
+
+server = app.listen(PORT, () => {
   console.log(`\n🚀 MuYunAPI 服务器已启动`);
   console.log(`   端口: ${PORT}`);
   console.log(`   访问: http://localhost:${PORT}`);
   console.log(`   管理: http://localhost:${PORT}/admin`);
   console.log(`   API文档: http://localhost:${PORT}/api/apis\n`);
+});
+
+// 优雅退出处理函数
+function gracefulShutdown(signal) {
+  console.log(`\n🛑 收到退出信号 (${signal})，正在优雅关闭 HTTP 服务器...`);
+  
+  if (!server) return process.exit(0);
+
+  // 停止接收新请求，并关闭现有连接
+  server.close((err) => {
+    if (err) {
+      console.error('❌ 关闭服务器时发生错误:', err);
+      process.exit(1);
+    }
+    console.log('✅ HTTP 服务器已完全关闭，进程即将退出。');
+    process.exit(0);
+  });
+
+  // 兜底方案：如果 10 秒后还没关闭成功，强制退出（防止死锁）
+  setTimeout(() => {
+    console.error('⚠️ 强制关闭超时，正在强制终止进程...');
+    process.exit(1);
+  }, 10000);
+}
+
+// 监听标准退出信号（PM2 stop/restart 会触发这些）
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// 监听未捕获的异常，防止 PM2 频繁崩溃重启
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 module.exports = app;
