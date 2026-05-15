@@ -104,11 +104,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { apiApi } from '../api'
 import { useUserStore } from '../stores/user'
+import { useDeviceStore } from '../stores/device'
 import ApiCard from '../components/ApiCard.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const deviceStore = useDeviceStore()
 
 const categories = ref([])
 const apis = ref([])
@@ -293,8 +295,8 @@ onMounted(async () => {
 // 响应式
 @media (max-width: 768px) {
   .explore-header {
-    padding: 24px 16px 20px;
-    h1 { font-size: 22px; }
+    padding: 20px 16px 16px;
+    h1 { font-size: 21px; }
     p { font-size: 13px; }
   }
   .container {
@@ -309,14 +311,18 @@ onMounted(async () => {
     width: 100%;
     position: static;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 12px;
+    margin-bottom: 8px;
   }
   .filter-section {
-    flex: 1;
-    min-width: 140px;
+    width: 100%;
     margin-bottom: 0;
-    padding: 12px;
+    padding: 14px;
+  }
+  .filter-label {
+    font-size: 12px;
+    margin-bottom: 10px;
   }
   .cat-list {
     flex-direction: row;
@@ -324,15 +330,36 @@ onMounted(async () => {
     gap: 8px;
   }
   .cat-item {
-    padding: 6px 12px;
+    padding: 8px 14px;
     border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+
+    .count {
+      margin-left: 4px;
+      font-size: 11px;
+      background: var(--bg-card2);
+      padding: 1px 8px;
+      border-radius: 10px;
+    }
+
+    &:hover {
+      border-color: var(--border-active);
+    }
+
     &.active {
       border-color: var(--primary);
+      background: color-mix(in srgb, var(--primary) 10%, transparent);
     }
   }
   .radio-list {
     flex-direction: row;
     flex-wrap: wrap;
+    gap: 12px;
   }
   .toolbar {
     flex-direction: column;
@@ -345,6 +372,19 @@ onMounted(async () => {
   }
   .api-card-skeleton {
     height: auto;
+  }
+  .pagination-wrap {
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cat-item {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+  .filter-section {
+    padding: 12px;
   }
 }
 </style>

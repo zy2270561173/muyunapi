@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
-import { builtInThemes, getThemeCssVars, validateTheme } from '../themes'
+import { ref, computed } from 'vue'
+import { builtInThemes, getThemeCssVars, validateTheme, getMergedThemeVars } from '../themes'
+import { useDeviceStore } from './device'
 
 const STORAGE_KEY = 'muyunapi_theme'
 const CUSTOM_THEMES_KEY = 'muyunapi_custom_themes'
@@ -36,8 +37,11 @@ export const useThemeStore = defineStore('theme', () => {
   function applyTheme(theme) {
     if (!theme || !theme.cssVars) return
 
+    const deviceStore = useDeviceStore()
+    const mergedVars = getMergedThemeVars(theme, deviceStore.isMobile)
+
     const root = document.documentElement
-    Object.entries(theme.cssVars).forEach(([key, value]) => {
+    Object.entries(mergedVars).forEach(([key, value]) => {
       root.style.setProperty(key, value)
     })
   }
@@ -133,11 +137,6 @@ export const useThemeStore = defineStore('theme', () => {
     currentThemeId.value = theme.id
     applyTheme(theme)
   }
-
-  // 监听主题变化，自动应用
-  watch(currentTheme, (newTheme) => {
-    applyTheme(newTheme)
-  }, { deep: true })
 
   return {
     // 状态

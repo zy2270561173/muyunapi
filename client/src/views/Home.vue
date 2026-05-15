@@ -137,10 +137,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiApi, siteApi } from '../api'
+import { useDeviceStore } from '../stores/device'
 import ApiCard from '../components/ApiCard.vue'
 import dayjs from 'dayjs'
 
 const router = useRouter()
+const deviceStore = useDeviceStore()
 const keyword = ref('')
 const loading = ref(true)
 const hotApis = ref([])
@@ -468,49 +470,54 @@ onMounted(async () => {
 // 响应式
 @media (max-width: 768px) {
   .hero {
-    padding: 60px 16px 48px;
+    padding: 56px 16px 40px;
     min-height: auto;
   }
   .hero-title {
-    font-size: 32px;
+    font-size: 30px;
     letter-spacing: -0.5px;
+    line-height: 1.25;
   }
   .hero-subtitle {
     font-size: 14px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    line-height: 1.6;
   }
   .hero-search {
     :deep(.el-input__wrapper) {
-      height: 44px !important;
+      height: 50px !important;
     }
     :deep(.el-input-group__append) {
-      padding: 0 16px;
+      padding: 0 14px;
+      font-weight: 500;
     }
   }
   .hero-stats {
-    gap: 24px;
-    .stat-value { font-size: 22px; }
+    gap: 20px;
+    .stat-value { font-size: 20px; font-weight: 700; }
     .stat-label { font-size: 12px; }
   }
   .announce-inner {
     padding: 0 16px;
+    height: 44px;
   }
   .section {
-    padding: 40px 16px;
+    padding: 36px 16px;
   }
   .section-header {
-    margin-bottom: 24px;
-    h2 { font-size: 20px; }
+    margin-bottom: 20px;
+    h2 { font-size: 19px; font-weight: 700; }
+    .see-all { font-size: 13px; }
   }
   .category-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
   }
   .category-card {
-    padding: 16px 12px;
-    .cat-icon { font-size: 24px; }
+    padding: 18px 12px;
+    .cat-icon { font-size: 26px; margin-bottom: 8px; }
     .cat-name { font-size: 13px; }
-    .cat-count { font-size: 11px; }
+    .cat-count { font-size: 11px; margin-top: 2px; }
   }
   .api-grid {
     grid-template-columns: 1fr;
@@ -521,15 +528,33 @@ onMounted(async () => {
     gap: 12px;
   }
   .feature-card {
-    padding: 20px;
+    padding: 18px;
     .feature-icon { font-size: 28px; }
+    h3 { font-size: 15px; margin-bottom: 8px; }
+    p { font-size: 13px; }
   }
 }
 
 @media (max-width: 480px) {
-  .hero-title {
-    font-size: 28px;
+  .hero {
+    padding: 48px 14px 36px;
   }
+  .hero-title {
+    font-size: 26px;
+  }
+  .hero-badge {
+    font-size: 12px;
+    padding: 5px 14px;
+  }
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .stat-item {
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 360px) {
   .category-grid {
     grid-template-columns: repeat(2, 1fr);
   }

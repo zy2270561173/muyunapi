@@ -234,7 +234,7 @@ const testResult = ref(null)
 const examples = ref({})
 const activeCodeTab = ref('curl')
 
-const langLabels = { curl: 'cURL', javascript: 'JavaScript', python: 'Python', php: 'PHP', nodejs: 'Node.js' }
+const langLabels = { curl: 'cURL', javascript: 'JavaScript', python: 'Python', php: 'PHP', nodejs: 'Node.js', cpp: 'C++', java: 'Java' }
 
 // 转换 endpoint 为实际调用地址
 const callUrl = computed(() => {
@@ -695,49 +695,278 @@ pre {
 
 // ========== 手机端响应式 ==========
 @media (max-width: 768px) {
-  .detail-hero { padding: 24px 16px 20px; }
-  h1 { font-size: 22px !important; }
-  .api-desc-text { font-size: 14px; }
-  .hero-content { flex-direction: column; gap: 16px; }
+  .api-detail-page { 
+    padding-bottom: 40px; 
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .detail-hero { 
+    padding: 24px 16px 20px; 
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .container { padding: 0 16px; }
+
+  // Hero 区域
+  h1 { font-size: 22px !important; font-weight: 700; color: var(--text-primary); }
+  .api-desc-text { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+  .hero-content { 
+    flex-direction: column; 
+    gap: 16px; 
+  }
   .hero-right {
     flex-direction: row;
     padding-top: 0;
-    .el-button { flex: 1; }
+    width: 100%;
+    gap: 12px;
+    .el-button { flex: 1; height: 44px; font-size: 14px; }
   }
 
+  // 主体内容
   .detail-body {
     flex-direction: column;
-    padding-top: 20px;
+    padding: 20px 16px;
     gap: 16px;
+    align-items: stretch;
   }
+  
+  .left-content { 
+    gap: 16px; 
+    min-width: 0;
+  }
+  
+  // 侧边栏优化
   .right-panel {
     width: 100% !important;
     position: static !important;
     gap: 16px;
+    order: -1;
   }
-  .info-card { padding: 16px; }
-  .card-title { font-size: 14px; }
+
+  // 通用卡片样式
+  .info-card { 
+    padding: 16px; 
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  
+  .card-title { 
+    font-size: 14px; 
+    font-weight: 600; 
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin-left: 12px;
+    }
+  }
 
   // 接口地址栏
   .endpoint-bar {
     flex-wrap: wrap;
     gap: 8px;
-    .endpoint-url { flex-basis: 100%; order: 3; }
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    .method-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .endpoint-url {
+      flex-basis: 100%;
+      order: 3;
+      font-size: 12px;
+      color: var(--text-secondary);
+      word-break: break-all;
+    }
   }
 
-  // 参数表格横向滚动
-  :deep(.el-table) { width: 100%; }
-  :deep(.el-table__body-wrapper) { overflow-x: auto; }
+  // 参数表格 - 横向滚动
+  :deep(.el-table) { 
+    width: 100%;
+    font-size: 12px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  :deep(.el-table__header-wrapper) {
+    overflow-x: auto;
+  }
+  :deep(.el-table__body-wrapper) { 
+    overflow-x: auto; 
+    overflow-y: visible;
+    max-height: none;
+  }
+  :deep(.el-table__body) {
+    min-width: 600px;
+  }
+  :deep(.el-table th),
+  :deep(.el-table td) {
+    padding: 10px 12px;
+    background: var(--bg-card2);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+
+  // 代码块 - 纵向滚动
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  
+  .code-toolbar {
+    background: var(--code-header-bg);
+    border-bottom: 1px solid var(--code-header-border);
+    padding: 8px 12px;
+  }
+
+  .code-block pre {
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--code-text);
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 300px;
+    white-space: pre;
+    word-break: break-all;
+  }
+
+  // tabs
+  :deep(.el-tabs__header) { 
+    margin-bottom: 0; 
+    border-bottom: 1px solid var(--border);
+  }
+  :deep(.el-tabs__item) {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 0 16px;
+    height: 40px;
+    line-height: 40px;
+  }
+  :deep(.el-tabs__item.is-active) {
+    color: var(--primary);
+  }
+  :deep(.el-tabs__nav-wrap::after) { 
+    display: none;
+  }
+
+  // 测试面板
+  .test-panel {
+    .test-params {
+      gap: 12px;
+    }
+    .param-row {
+      label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+      .el-input__wrapper {
+        min-height: 36px;
+      }
+    }
+    .test-result {
+      margin-top: 16px;
+    }
+  }
 
   // 测速柱图
-  .speed-bars { gap: 4px; }
-  .bar-val { font-size: 9px; }
+  .speed-card {
+    .speed-bars { 
+      gap: 4px; 
+      height: 50px;
+    }
+    .bar-val { font-size: 9px; color: var(--text-muted); }
+  }
 
-  // markdown 表格横向滚动
+  // markdown 文档
+  .doc-card {
+    .md-body {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+  }
+
+  // markdown 表格
   .md-body :deep(.md-table) {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+    margin: 10px 0;
+    font-size: 12px;
+    th, td {
+      padding: 8px 12px;
+      background: var(--bg-card2);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+  }
+}
+
+// 超小屏优化
+@media (max-width: 480px) {
+  .api-detail-page { padding-bottom: 30px; }
+  
+  h1 { font-size: 20px !important; }
+  
+  .api-meta { 
+    gap: 8px; 
+    flex-wrap: wrap;
+  }
+  
+  .cat-tag { 
+    font-size: 12px; 
+    padding: 4px 10px; 
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-muted);
+  }
+  
+  .method-badge { 
+    font-size: 10px; 
+    padding: 3px 7px; 
+    font-weight: 700;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  
+  .badge-source, 
+  .badge-free, 
+  .badge-paid {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  
+  .hero-right .el-button {
+    height: 42px;
+    font-size: 13px;
+  }
+  
+  .info-card { padding: 14px; }
+  
+  .code-block pre {
+    max-height: 250px;
+    font-size: 11px;
   }
 }
 </style>

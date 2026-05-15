@@ -18,7 +18,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 const pinia = createPinia()
 app.use(pinia)
 
-// 初始化主题
+// 初始化主题（根据 UA 自动检测移动端）
 const themeStore = useThemeStore()
 themeStore.initTheme()
 

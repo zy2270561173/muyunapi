@@ -1,5 +1,16 @@
 // 内置主题配置
 
+// 移动端优化的变量
+const mobileOverrides = {
+  '--radius-sm': '10px',
+  '--radius-md': '14px',
+  '--radius-lg': '18px',
+  '--radius-xl': '20px',
+  '--shadow-sm': '0 1px 8px rgba(0,0,0,0.15)',
+  '--shadow-md': '0 4px 16px rgba(0,0,0,0.2)',
+  '--shadow-lg': '0 8px 24px rgba(0,0,0,0.25)',
+}
+
 export const builtInThemes = [
   {
     id: 'default-dark',
@@ -42,6 +53,11 @@ export const builtInThemes = [
       '--overlay-bg': 'rgba(13,13,26,0.8)',
       '--row-hover-bg': 'rgba(255,255,255,0.03)',
       '--btn-text': '#fff',
+    },
+    mobileCssVars: {
+      '--shadow-sm': '0 1px 8px rgba(0,0,0,0.35)',
+      '--shadow-md': '0 4px 16px rgba(0,0,0,0.4)',
+      '--shadow-lg': '0 8px 24px rgba(0,0,0,0.45)',
     }
   },
   {
@@ -85,6 +101,11 @@ export const builtInThemes = [
       '--overlay-bg': 'rgba(255,255,255,0.85)',
       '--row-hover-bg': 'rgba(0,0,0,0.04)',
       '--btn-text': '#fff',
+    },
+    mobileCssVars: {
+      '--shadow-sm': '0 1px 8px rgba(0,0,0,0.08)',
+      '--shadow-md': '0 4px 16px rgba(0,0,0,0.12)',
+      '--shadow-lg': '0 8px 24px rgba(0,0,0,0.15)',
     }
   }
 ]
@@ -94,6 +115,18 @@ export function getThemeCssVars(cssVars) {
   const entries = Object.entries(cssVars)
   const lines = entries.map(([key, value]) => `  ${key}: ${value};`)
   return `:root {\n${lines.join('\n')}\n}`
+}
+
+// 合并桌面和移动端变量
+export function getMergedThemeVars(theme, isMobile = false) {
+  if (!isMobile || !theme.mobileCssVars) {
+    return theme.cssVars
+  }
+  return {
+    ...theme.cssVars,
+    ...mobileOverrides,
+    ...theme.mobileCssVars,
+  }
 }
 
 // 验证主题配置

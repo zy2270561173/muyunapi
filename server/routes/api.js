@@ -314,6 +314,106 @@ axios.get("${apiUrl}", {
 
 axios.${api.method.toLowerCase()}("${apiUrl}", ${JSON.stringify(exampleParams, null, 2)})
   .then(res => console.log(res.data));`,
+
+    cpp: api.method === 'GET'
+      ? `#include <iostream>
+#include <curl/curl.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+int main() {
+    CURL *curl = curl_easy_init();
+    if(curl) {
+        std::string response;
+        curl_easy_setopt(curl, CURLOPT_URL, "${apiUrl}${queryStr}");
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, [](char* ptr, size_t size, size_t nmemb, std::string* data) {
+            data->append(ptr, size * nmemb);
+            return size * nmemb;
+        });
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_perform(curl);
+        auto data = json::parse(response);
+        std::cout << data.dump() << std::endl;
+        curl_easy_cleanup(curl);
+    }
+    return 0;
+}`
+      : `#include <iostream>
+#include <curl/curl.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+int main() {
+    CURL *curl = curl_easy_init();
+    if(curl) {
+        json payload = ${JSON.stringify(exampleParams, null, 4)};
+        std::string postData = payload.dump();
+        
+        std::string response;
+        struct curl_slist *headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        
+        curl_easy_setopt(curl, CURLOPT_URL, "${apiUrl}");
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, [](char* ptr, size_t size, size_t nmemb, std::string* data) {
+            data->append(ptr, size * nmemb);
+            return size * nmemb;
+        });
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_perform(curl);
+        auto data = json::parse(response);
+        std::cout << data.dump() << std::endl;
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+    }
+    return 0;
+}`,
+
+    java: api.method === 'GET'
+      ? `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class ApiExample {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("${apiUrl}${queryStr}"))
+            .header("Content-Type", "application/json")
+            .GET()
+            .build();
+        
+        HttpResponse<String> response = client.send(request,
+            HttpResponse.BodyHandlers.ofString());
+        System.out.println(response.body());
+    }
+}`
+      : `import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
+
+public class ApiExample {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        String jsonBody = "${JSON.stringify(exampleParams).replace(/"/g, '\\"')}";
+        
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("${apiUrl}"))
+            .header("Content-Type", "application/json")
+            .POST(BodyPublishers.ofString(jsonBody))
+            .build();
+        
+        HttpResponse<String> response = client.send(request,
+            HttpResponse.BodyHandlers.ofString());
+        System.out.println(response.body());
+    }
+}`,
   };
 
   res.json({ code: 200, data: { examples, source: api.source, apiUrl } });

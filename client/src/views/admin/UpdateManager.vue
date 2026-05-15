@@ -876,6 +876,9 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .history-item {
@@ -883,6 +886,7 @@ onMounted(() => {
   background: var(--bg-card2);
   border-radius: 8px;
   transition: background 0.2s;
+  flex-shrink: 0;
 
   &:hover {
     background: var(--border);
@@ -940,6 +944,9 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .backup-item {
@@ -950,6 +957,7 @@ onMounted(() => {
   background: var(--bg-card2);
   border-radius: 8px;
   transition: background 0.2s;
+  flex-shrink: 0;
 
   &:hover {
     background: var(--border);

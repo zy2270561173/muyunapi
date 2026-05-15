@@ -314,3 +314,91 @@ pre, code {
 // NProgress
 #nprogress .bar { background: var(--primary) !important; height: 3px !important; }
 #nprogress .peg { box-shadow: 0 0 10px var(--primary), 0 0 5px var(--primary) !important; }
+
+// =================== 移动端全局适配 ===================
+@media (max-width: 768px) {
+  html, body, #app {
+    font-size: 14px;
+  }
+  
+  // 禁用双击缩放和双击选择
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  // 优化按钮点击区
+  .el-button, .el-radio, .el-checkbox {
+    min-height: 44px;
+  }
+  
+  // 优化输入框
+  .el-input__wrapper {
+    min-height: 48px;
+  }
+  
+  // 滚动条优化
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-thumb { background: rgba(233,147,18,0.2); }
+}
+
+// 超小屏手机
+@media (max-width: 375px) {
+  html, body, #app {
+    font-size: 13px;
+  }
+}
+
+// 横屏手机优化
+@media (max-width: 768px) and (orientation: landscape) {
+  .navbar {
+    height: 52px;
+  }
+  
+  .main-content {
+    padding-top: 52px !important;
+  }
+}
+
+// 平板优化
+@media (min-width: 768px) and (max-width: 1024px) {
+  html, body, #app {
+    font-size: 14px;
+  }
+}
+
+// =================== 触摸优化 ===================
+.touch-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.touch-ripple:active::after {
+  width: 200px;
+  height: 200px;
+}
+
+// =================== 安全区域适配 ===================
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-bottom-lg {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+  }
+}
+

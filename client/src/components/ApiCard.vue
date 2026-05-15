@@ -50,7 +50,7 @@ function formatNum(n) {
 </script>
 
 <style lang="scss" scoped>
-.api-card-wrap { cursor: pointer; }
+.api-card-wrap { cursor: pointer; touch-action: manipulation; }
 
 .api-card {
   background: var(--bg-card);
@@ -160,18 +160,38 @@ function formatNum(n) {
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
+    font-size: 18px;
+    padding: 4px;
     &:hover { color: var(--primary); }
     &.favorited { color: var(--primary); }
+    &:active { transform: scale(0.9); }
   }
 }
 
 // 响应式
 @media (max-width: 768px) {
-  .api-card { padding: 16px; }
-  .api-name { font-size: 14px; }
-  .api-desc { font-size: 12px; -webkit-line-clamp: 3; min-height: auto; }
-  .cat-badge { font-size: 11px; padding: 2px 8px; }
-  .method-badge { font-size: 10px; padding: 1px 6px; }
+  .api-card { 
+    padding: 16px; 
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+  .api-name { font-size: 15px; }
+  .api-desc { font-size: 13px; -webkit-line-clamp: 3; min-height: auto; }
+  .cat-badge { font-size: 11px; padding: 3px 9px; }
+  .method-badge { font-size: 10px; padding: 2px 7px; }
   .call-count { font-size: 11px; }
+  .fav-icon {
+    font-size: 20px;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .api-card { padding: 14px; }
+  .api-name { font-size: 14px; }
+  .api-desc { font-size: 12px; }
+  .card-top { gap: 6px; margin-bottom: 10px; }
+  .card-footer { padding-top: 10px; }
 }
 </style>

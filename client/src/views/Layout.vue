@@ -110,28 +110,34 @@
     <!-- 移动端菜单抽屉 -->
     <el-drawer
       v-model="mobileMenuOpen"
-      title="菜单"
       direction="rtl"
-      size="280px"
+      size="85%"
       :with-header="false"
+      class="mobile-drawer"
+      :modal-class="deviceStore.isTouchDevice ? 'touch-modal' : ''"
     >
       <div class="mobile-menu">
         <div class="mobile-menu-header">
-          <div class="logo-icon sm">M</div>
-          <span class="logo-text">MuYunAPI</span>
+          <div class="mobile-header-left">
+            <div class="logo-icon sm">M</div>
+            <span class="logo-text">MuYunAPI</span>
+          </div>
+          <el-button text class="mobile-close-btn" @click="mobileMenuOpen = false">
+            <el-icon><Close /></el-icon>
+          </el-button>
         </div>
 
         <nav class="mobile-nav">
-          <router-link to="/" @click="mobileMenuOpen = false">
+          <router-link to="/" @click="mobileMenuOpen = false" class="touch-ripple">
             <el-icon><HomeFilled /></el-icon> 首页
           </router-link>
-          <router-link to="/explore" @click="mobileMenuOpen = false">
+          <router-link to="/explore" @click="mobileMenuOpen = false" class="touch-ripple">
             <el-icon><Grid /></el-icon> 浏览接口
           </router-link>
-          <router-link v-if="aboutEnabled" to="/about" @click="mobileMenuOpen = false">
+          <router-link v-if="aboutEnabled" to="/about" @click="mobileMenuOpen = false" class="touch-ripple">
             <el-icon><User /></el-icon> 关于我
           </router-link>
-          <router-link v-if="userStore.isAdmin" to="/admin" @click="mobileMenuOpen = false">
+          <router-link v-if="userStore.isAdmin" to="/admin" @click="mobileMenuOpen = false" class="touch-ripple">
             <el-icon><Setting /></el-icon> 管理后台
           </router-link>
         </nav>
@@ -140,19 +146,30 @@
 
         <div v-if="userStore.isLoggedIn" class="mobile-user">
           <div class="mobile-user-info">
-            <el-avatar :src="avatarUrl" :size="40">{{ userStore.userInfo?.nickname?.[0] }}</el-avatar>
-            <span class="mobile-username">{{ userStore.userInfo?.nickname }}</span>
+            <el-avatar :src="avatarUrl" :size="48">{{ userStore.userInfo?.nickname?.[0] }}</el-avatar>
+            <div class="mobile-user-text">
+              <span class="mobile-username">{{ userStore.userInfo?.nickname }}</span>
+              <span class="mobile-user-email" v-if="userStore.userInfo?.email">{{ userStore.userInfo.email }}</span>
+            </div>
           </div>
           <div class="mobile-user-links">
-            <router-link to="/user" @click="mobileMenuOpen = false">个人中心</router-link>
-            <router-link to="/user/keys" @click="mobileMenuOpen = false">密钥管理</router-link>
-            <router-link to="/user/favorites" @click="mobileMenuOpen = false">我的收藏</router-link>
-            <a @click="handleLogoutMobile">退出登录</a>
+            <router-link to="/user" @click="mobileMenuOpen = false" class="touch-ripple">
+              <el-icon><User /></el-icon>个人中心
+            </router-link>
+            <router-link to="/user/keys" @click="mobileMenuOpen = false" class="touch-ripple">
+              <el-icon><Key /></el-icon>密钥管理
+            </router-link>
+            <router-link to="/user/favorites" @click="mobileMenuOpen = false" class="touch-ripple">
+              <el-icon><Star /></el-icon>我的收藏
+            </router-link>
+            <a @click="handleLogoutMobile" class="touch-ripple logout-link">
+              <el-icon><SwitchButton /></el-icon>退出登录
+            </a>
           </div>
         </div>
         <div v-else class="mobile-auth">
-          <el-button type="primary" @click="$router.push('/login'); mobileMenuOpen = false" style="width:100%">登录</el-button>
-          <el-button @click="$router.push('/register'); mobileMenuOpen = false" style="width:100%;margin-top:12px">注册</el-button>
+          <el-button type="primary" @click="$router.push('/login'); mobileMenuOpen = false" size="large" style="width:100%">登录</el-button>
+          <el-button @click="$router.push('/register'); mobileMenuOpen = false" size="large" style="width:100%;margin-top:12px">注册</el-button>
         </div>
       </div>
     </el-drawer>
@@ -198,11 +215,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { useThemeStore } from '../stores/theme'
+import { useDeviceStore } from '../stores/device'
 import { siteApi, friendshipApi } from '../api'
 import axios from 'axios'
 import {
@@ -218,12 +236,14 @@ import {
   ArrowDown,
   Menu,
   HomeFilled,
-  Grid
+  Grid,
+  Close
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
+const deviceStore = useDeviceStore()
 const scrolled = ref(false)
 const siteInfo = ref({})
 const friendships = ref([])
@@ -233,6 +253,18 @@ const aboutEnabled = ref(true)
 const mobileMenuOpen = ref(false)
 const footerTimeStr = ref('')
 let footerTimer = null
+
+// 监听路由变化自动关闭移动端菜单
+watch(() => router.path, () => {
+  mobileMenuOpen.value = false
+})
+
+// 设备切换时自动关闭菜单
+watch(() => deviceStore.isMobile, (isMobile) => {
+  if (!isMobile) {
+    mobileMenuOpen.value = false
+  }
+})
 
 const avatarUrl = computed(() => {
   const av = userStore.userInfo?.avatar
@@ -555,94 +587,181 @@ function handleLogoutMobile() {
 
 // 移动端菜单
 .mobile-menu {
-  padding: 20px 0;
+  height: 100vh;
+  padding: 0;
   background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
 
   .mobile-menu-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0 20px 20px;
+    justify-content: space-between;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
+    background: var(--bg-primary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    .mobile-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
     .logo-text {
       font-size: 18px;
+    }
+
+    .mobile-close-btn {
+      padding: 8px;
+      color: var(--text-secondary);
+
+      .el-icon {
+        font-size: 22px;
+      }
+
+      &:hover {
+        color: var(--text-primary);
+        background: var(--bg-card2);
+      }
     }
   }
 
   .mobile-nav {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 0 16px;
+    gap: 6px;
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
 
     a {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+      gap: 14px;
+      padding: 14px 16px;
       color: var(--text-primary);
       text-decoration: none;
-      border-radius: 8px;
+      border-radius: 12px;
       transition: all 0.2s;
+      font-size: 15px;
+      min-height: 48px;
 
       &:hover, &.router-link-active {
-        background: color-mix(in srgb, var(--primary) 10%, transparent);
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
         color: var(--primary);
       }
 
       .el-icon {
-        font-size: 18px;
+        font-size: 20px;
       }
     }
   }
 
   .mobile-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 16px 20px;
+    height: 8px;
+    background: var(--bg-card2);
+    margin: 0;
+    flex-shrink: 0;
   }
 
   .mobile-user {
-    padding: 0 20px;
+    padding: 16px;
+    background: var(--bg-card);
+    flex-shrink: 0;
 
     .mobile-user-info {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: var(--bg-card2);
+      border-radius: 12px;
+    }
+
+    .mobile-user-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
     }
 
     .mobile-username {
       font-size: 16px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .mobile-user-email {
+      font-size: 13px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .mobile-user-links {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
 
       a {
-        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
         color: var(--text-secondary);
         text-decoration: none;
-        border-radius: 6px;
+        border-radius: 10px;
         cursor: pointer;
+        min-height: 44px;
+        font-size: 14px;
 
         &:hover {
           background: var(--bg-card2);
           color: var(--text-primary);
+        }
+
+        .el-icon {
+          font-size: 18px;
+        }
+
+        &.logout-link {
+          color: var(--danger);
+          margin-top: 8px;
+
+          &:hover {
+            background: color-mix(in srgb, var(--danger) 8%, transparent);
+          }
         }
       }
     }
   }
 
   .mobile-auth {
-    padding: 0 20px;
+    padding: 16px;
+    flex-shrink: 0;
   }
+}
+
+// 抽屉优化
+:deep(.mobile-drawer) {
+  .el-drawer__header {
+    margin-bottom: 0;
+  }
+
+  .el-drawer__body {
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.touch-modal {
+  opacity: 0.6;
 }
 
 .main-content {
