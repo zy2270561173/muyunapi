@@ -1,17 +1,31 @@
 <template>
   <div class="admin-layout">
+    <!-- 移动端遮罩 -->
+    <div v-if="mobileSidebarOpen" class="mobile-mask" @click="mobileSidebarOpen = false"></div>
+    
     <!-- 侧边栏 -->
-    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
-      <div class="sidebar-logo">
-        <div class="logo-icon">M</div>
-        <span v-if="!sidebarCollapsed" class="logo-text">MuYunAPI</span>
+    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileSidebarOpen }">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">M</div>
+          <span class="logo-text">MuYunAPI</span>
+        </div>
+        <el-button 
+          v-if="isMobile" 
+          text 
+          class="mobile-close-btn"
+          @click="mobileSidebarOpen = false"
+        >
+          <el-icon><Close /></el-icon>
+        </el-button>
       </div>
 
       <el-menu
         :default-active="activeMenu"
-        :collapse="sidebarCollapsed"
+        :collapse="sidebarCollapsed && !isMobile"
         :collapse-transition="false"
         router
+        @select="handleMenuSelect"
       >
         <el-menu-item index="/admin/dashboard">
           <el-icon><Odometer /></el-icon>
@@ -64,9 +78,9 @@
       </el-menu>
 
       <div class="sidebar-footer">
-        <el-button text @click="$router.push('/')" style="color:var(--text-muted);width:100%">
+        <el-button text @click="handleBackToFront" style="color:var(--text-muted);width:100%">
           <el-icon><House /></el-icon>
-          <span v-if="!sidebarCollapsed">返回前台</span>
+          <span>返回前台</span>
         </el-button>
       </div>
     </aside>
@@ -75,8 +89,11 @@
       <!-- 顶栏 -->
       <header class="admin-header">
         <div class="header-left">
-          <el-button text @click="sidebarCollapsed = !sidebarCollapsed">
-            <el-icon size="20"><Expand v-if="sidebarCollapsed" /><Fold v-else /></el-icon>
+          <el-button 
+            text 
+            @click="isMobile ? mobileSidebarOpen = true : sidebarCollapsed = !sidebarCollapsed"
+          >
+            <el-icon size="20"><Expand v-if="sidebarCollapsed && !isMobile" /><Fold v-else /></el-icon>
           </el-button>
           <div class="breadcrumb-area">
             <span class="admin-title">{{ currentTitle }}</span>
@@ -112,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -131,17 +148,37 @@ import {
   Fold,
   ArrowDown,
   UserFilled,
-  Download
+  Download,
+  Close
 } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
+import { useDeviceStore } from '../../stores/device'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const deviceStore = useDeviceStore()
 const sidebarCollapsed = ref(false)
+const mobileSidebarOpen = ref(false)
+
+onMounted(() => {
+  deviceStore.detectDevice()
+})
+
+const isMobile = computed(() => deviceStore.isMobile)
 
 const activeMenu = computed(() => route.path)
 const currentTitle = computed(() => route.meta.title || '管理后台')
+
+function handleMenuSelect() {
+  if (isMobile.value) {
+    mobileSidebarOpen.value = false
+  }
+}
+
+function handleBackToFront() {
+  router.push('/')
+}
 
 function handleLogout() {
   userStore.logout()
@@ -156,6 +193,22 @@ function handleLogout() {
   height: 100vh;
   overflow: hidden;
   background: var(--bg-main);
+  position: relative;
+}
+
+.mobile-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
 }
 
 .sidebar {
@@ -167,18 +220,40 @@ function handleLogout() {
   flex-direction: column;
   transition: width 0.3s ease;
   overflow: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  transform: translateX(-100%);
   
   &.collapsed { width: 64px; }
+  
+  @media (min-width: 769px) {
+    transform: translateX(0);
+    position: static;
+  }
+  
+  &.mobile-open {
+    transform: translateX(0);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+  }
 }
 
-.sidebar-logo {
-  height: 64px;
+.sidebar-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  height: 64px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   overflow: hidden;
   
   .logo-icon {
@@ -200,6 +275,16 @@ function handleLogout() {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     white-space: nowrap;
+  }
+}
+
+.mobile-close-btn {
+  padding: 8px;
+  color: var(--text-secondary);
+  
+  &:hover {
+    background: var(--bg-card2);
+    color: var(--text-primary);
   }
 }
 
@@ -232,6 +317,10 @@ function handleLogout() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .admin-header {
@@ -241,11 +330,31 @@ function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 16px;
   flex-shrink: 0;
+  
+  @media (max-width: 768px) {
+    padding: 0 12px;
+  }
 }
-.header-left { display: flex; align-items: center; gap: 16px; }
-.admin-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.header-left { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
+}
+.admin-title { 
+  font-size: 16px; 
+  font-weight: 600; 
+  color: var(--text-primary);
+  
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+}
 .header-right { display: flex; align-items: center; }
 .admin-user {
   display: flex;
@@ -258,7 +367,16 @@ function handleLogout() {
   border: 1px solid var(--border);
   color: var(--text-primary);
   font-size: 14px;
+  
   &:hover { border-color: var(--primary); }
+  
+  span {
+    display: none;
+    
+    @media (min-width: 769px) {
+      display: block;
+    }
+  }
 }
 
 .admin-content {
@@ -266,5 +384,9 @@ function handleLogout() {
   overflow-y: auto;
   padding: 24px;
   background: var(--bg-main);
+  
+  @media (max-width: 768px) {
+    padding: 16px 12px;
+  }
 }
 </style>

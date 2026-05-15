@@ -937,18 +937,103 @@ async function deleteVersion(v) {
 </script>
 
 <style lang="scss" scoped>
-.manager-page { display: flex; flex-direction: column; gap: 20px; }
+.manager-page { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
+}
+
 .manager-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  flex-wrap: wrap;
+  gap: 12px;
+  
+  h2 { 
+    font-size: 20px; 
+    font-weight: 700; 
+    color: var(--text-primary); 
+    
+    @media (max-width: 768px) {
+      font-size: 16px;
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
-.header-actions { display: flex; gap: 12px; align-items: center; }
-.pagination-wrap { display: flex; justify-content: flex-end; margin-top: 16px; }
 
-.api-name-cell { display: flex; flex-direction: column; gap: 4px; }
-.slug-tag { font-size: 11px; color: var(--text-muted); font-family: monospace; background: var(--bg-card2); padding: 1px 6px; border-radius: 4px; width: fit-content; }
+.header-actions { 
+  display: flex; 
+  gap: 12px; 
+  align-items: center; 
+  flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    gap: 8px;
+    
+    .el-input {
+      flex: 1;
+      min-width: 120px;
+    }
+    .el-select {
+      flex: 1;
+      min-width: 100px;
+    }
+    .el-button {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    
+    > * {
+      width: 100%;
+    }
+  }
+}
+
+.pagination-wrap { 
+  display: flex; 
+  justify-content: flex-end; 
+  margin-top: 16px; 
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+    margin-top: 12px;
+    
+    :deep(.el-pagination) {
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+  }
+}
+
+.api-name-cell { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+}
+.slug-tag { 
+  font-size: 11px; 
+  color: var(--text-muted); 
+  font-family: monospace; 
+  background: var(--bg-card2); 
+  padding: 1px 6px; 
+  border-radius: 4px; 
+  width: fit-content; 
+}
 
 .method-badge {
   font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; font-family: monospace;
@@ -988,6 +1073,15 @@ async function deleteVersion(v) {
   display: flex;
   gap: 8px;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .el-input {
+      width: 100% !important;
+    }
+  }
 }
 
 .params-editor {
@@ -999,8 +1093,45 @@ async function deleteVersion(v) {
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  max-height: 400px;
+  overflow-x: auto;
+  overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    padding: 8px;
+    max-height: 300px;
+  }
+  
+  @media (max-width: 480px) {
+    max-height: 250px;
+  }
+  
+  :deep(.el-input__wrapper) {
+    min-width: 80px;
+  }
 }
-.param-row { display: flex; align-items: center; gap: 8px; }
+.param-row { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px;
+  min-width: max-content;
+  width: fit-content;
+  
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    min-width: 100%;
+    width: 100%;
+    
+    .el-input {
+      flex: 1;
+      min-width: 80px;
+    }
+    .el-select {
+      flex: 1;
+      min-width: 70px;
+    }
+  }
+}
 
 // 文档编辑器
 .doc-editor-wrap {
@@ -1018,6 +1149,10 @@ async function deleteVersion(v) {
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
   gap: 6px;
+  
+  @media (max-width: 768px) {
+    padding: 6px 8px;
+  }
 }
 .doc-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
 .doc-toolbar-btns {
@@ -1060,6 +1195,13 @@ async function deleteVersion(v) {
   font-size: 14px;
   line-height: 1.8;
   color: var(--text-primary);
+  
+  @media (max-width: 768px) {
+    padding: 12px;
+    font-size: 13px;
+    max-height: 300px;
+  }
+  
   :deep(h1) { font-size: 20px; font-weight: 700; margin: 16px 0 8px; color: var(--text-primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
   :deep(h2) { font-size: 16px; font-weight: 600; margin: 16px 0 8px; color: var(--text-primary); padding-left: 10px; border-left: 3px solid var(--primary); }
   :deep(h3) { font-size: 14px; font-weight: 600; margin: 12px 0 6px; color: var(--text-secondary); }
@@ -1123,6 +1265,12 @@ async function deleteVersion(v) {
     flex-wrap: wrap;
     align-items: stretch;
   }
+  
+  @media (max-width: 768px) {
+    :deep(.el-radio-group) {
+      flex-direction: column;
+    }
+  }
 }
 :deep(.source-radio) {
   display: flex;
@@ -1144,6 +1292,11 @@ async function deleteVersion(v) {
   &:hover { border-color: var(--primary); background: rgba(233,147,18,0.05); }
   &.is-checked { border-color: var(--primary); background: rgba(233,147,18,0.08); .el-icon { color: var(--primary); } }
   .el-radio__label { display: contents; }
+  
+  @media (max-width: 768px) {
+    max-width: none;
+    min-width: auto;
+  }
 }
 .endpoint-hint {
   display: flex;
@@ -1152,6 +1305,10 @@ async function deleteVersion(v) {
   margin-top: 6px;
   font-size: 12px;
   color: var(--info);
+  
+  @media (max-width: 768px) {
+    font-size: 11px;
+  }
 }
 .endpoint-locked-hint {
   display: flex;
@@ -1176,6 +1333,12 @@ async function deleteVersion(v) {
   border-radius: var(--radius-sm);
   font-size: 13px;
   color: var(--primary);
+  
+  @media (max-width: 768px) {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  
   &.credits-free {
     background: rgba(103, 194, 58, 0.08);
     border-color: rgba(103, 194, 58, 0.15);
@@ -1192,6 +1355,10 @@ async function deleteVersion(v) {
   max-height: 380px;
   display: flex;
   flex-direction: column;
+  
+  @media (max-width: 768px) {
+    max-height: 300px;
+  }
 }
 .local-api-search {
   padding: 10px 12px;
@@ -1213,6 +1380,12 @@ async function deleteVersion(v) {
   padding: 12px;
   overflow-y: auto;
   flex: 1;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 8px;
+  }
 }
 .local-api-item {
   display: flex;
@@ -1279,6 +1452,63 @@ async function deleteVersion(v) {
   .version-header {
     display: flex;
     gap: 12px;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 8px;
+      
+      .el-button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// 表格移动端适配
+:deep(.el-table) {
+  @media (max-width: 768px) {
+    font-size: 12px;
+    
+    .el-table__header th,
+    .el-table__body td {
+      padding: 8px 4px;
+    }
+    
+    .cell {
+      padding: 0 4px;
+    }
+    
+    .el-button--small {
+      padding: 4px 6px;
+      font-size: 11px;
+    }
+  }
+}
+
+// 弹窗移动端适配
+:deep(.el-dialog) {
+  @media (max-width: 768px) {
+    width: 95% !important;
+    margin: 10px auto;
+    
+    .el-dialog__body {
+      padding: 16px;
+    }
+    
+    .el-form-item {
+      margin-bottom: 14px;
+    }
+    
+    .el-row {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      
+      .el-col {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-bottom: 12px;
+      }
+    }
   }
 }
 </style>

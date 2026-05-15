@@ -1,0 +1,324 @@
+/* 后台管理页面全局移动端适配样式 */
+
+/* 通用管理页面布局 */
+.manager-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.manager-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.manager-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* 表格通用样式 */
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  overflow-x: auto;
+}
+
+/* 弹窗通用样式 */
+.dialog-form {
+  padding: 8px 0;
+}
+
+/* 移动端响应式 (768px以下) */
+@media (max-width: 768px) {
+  .manager-page {
+    gap: 12px;
+  }
+
+  .manager-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .manager-header h2 {
+    font-size: 16px;
+    width: 100%;
+  }
+
+  .header-actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .header-actions > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header-actions .el-input,
+  .header-actions .el-select {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .header-actions .el-button {
+    padding: 8px 12px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .pagination-wrap {
+    justify-content: center;
+    margin-top: 12px;
+  }
+
+  .pagination-wrap .el-pagination {
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+
+  .table-wrap {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Element Plus 表格移动端适配 */
+  .el-table {
+    font-size: 12px;
+  }
+
+  .el-table .el-table__header th,
+  .el-table .el-table__body td {
+    padding: 8px 4px;
+  }
+
+  .el-table .cell {
+    padding: 0 4px;
+  }
+
+  .el-table .el-button--small {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  /* Element Plus 弹窗移动端适配 - 增强版 */
+  .el-dialog {
+    width: 95% !important;
+    margin: 10px auto;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .el-dialog .el-dialog__header {
+    padding: 12px 16px;
+    margin: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .el-dialog .el-dialog__header .el-dialog__title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .el-dialog .el-dialog__body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 60vh;
+  }
+
+  .el-dialog .el-dialog__footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .el-dialog .el-dialog__footer .el-button {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .el-dialog .el-form-item {
+    margin-bottom: 14px;
+  }
+
+  .el-dialog .el-form-item__label {
+    font-size: 13px;
+    padding: 0 0 8px;
+  }
+
+  .el-dialog .el-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .el-dialog .el-row .el-col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-bottom: 12px;
+  }
+
+  /* 弹窗内上传组件 */
+  .el-dialog .el-upload-dragger {
+    padding: 24px;
+  }
+
+  .el-dialog .el-upload__text {
+    font-size: 13px;
+  }
+
+  /* 弹窗内表格 */
+  .el-dialog .el-table {
+    font-size: 11px;
+  }
+
+  .el-dialog .el-table .el-table__header th,
+  .el-dialog .el-table .el-table__body td {
+    padding: 6px 4px;
+  }
+
+  /* 弹窗内代码块 */
+  .el-dialog .code-viewer,
+  .el-dialog .code-block {
+    max-height: 40vh;
+    overflow: auto;
+  }
+
+  .el-dialog .code-pre {
+    font-size: 11px;
+  }
+
+  /* Element Plus 选择框、下拉框 */
+  .el-select {
+    width: 100% !important;
+  }
+
+  .el-select-dropdown {
+    max-width: 90vw;
+  }
+
+  .el-select-dropdown__item {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  /* Element Plus 输入框 */
+  .el-input {
+    width: 100% !important;
+  }
+
+  .el-input__inner {
+    font-size: 14px;
+  }
+
+  /* Element Plus 数字输入框 */
+  .el-input-number {
+    width: 100% !important;
+  }
+
+  /* Element Plus 折叠面板 */
+  .el-collapse-item__header {
+    font-size: 14px;
+  }
+
+  .el-collapse-item__content {
+    font-size: 13px;
+  }
+
+  /* 消息提示 */
+  .el-message {
+    min-width: 280px;
+  }
+
+  .el-message__content {
+    font-size: 13px;
+  }
+
+  /* 确认对话框 */
+  .el-message-box {
+    width: 90%;
+    max-width: 400px;
+  }
+
+  .el-message-box__message {
+    font-size: 14px;
+  }
+}
+
+/* 超小屏幕 (480px以下) */
+@media (max-width: 480px) {
+  .manager-header h2 {
+    font-size: 15px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+  }
+
+  .header-actions > * {
+    width: 100%;
+  }
+
+  .header-actions .el-button {
+    width: 100%;
+  }
+
+  .el-dialog {
+    width: 98% !important;
+    margin: 5px auto;
+  }
+
+  .el-dialog .el-dialog__header {
+    padding: 10px 12px;
+  }
+
+  .el-dialog .el-dialog__header .el-dialog__title {
+    font-size: 15px;
+  }
+
+  .el-dialog .el-dialog__body {
+    padding: 12px;
+    max-height: 55vh;
+  }
+
+  .el-dialog .el-dialog__footer {
+    padding: 10px 12px;
+    flex-direction: column;
+  }
+
+  .el-dialog .el-dialog__footer .el-button {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .el-form-item {
+    margin-bottom: 12px;
+  }
+
+  .el-form-item__label {
+    font-size: 12px;
+    padding: 0 0 6px;
+  }
+}

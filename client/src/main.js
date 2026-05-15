@@ -6,6 +6,7 @@ import 'element-plus/dist/index.css'
 import router from './router'
 import App from './App.vue'
 import './assets/main.scss'
+import './assets/admin-mobile.scss'
 import { useThemeStore } from './stores/theme'
 
 const app = createApp(App)

@@ -376,9 +376,53 @@ onMounted(loadUsers)
 </script>
 
 <style lang="scss" scoped>
-.manager-page { display: flex; flex-direction: column; gap: 20px; }
-.manager-header { display: flex; align-items: center; justify-content: space-between; h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); } }
-.pagination-wrap { display: flex; justify-content: flex-end; margin-top: 16px; }
+.manager-page { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
+}
+.manager-header { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  flex-wrap: wrap;
+  gap: 12px;
+  
+  h2 { 
+    font-size: 20px; 
+    font-weight: 700; 
+    color: var(--text-primary); 
+    
+    @media (max-width: 768px) {
+      font-size: 16px;
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+.pagination-wrap { 
+  display: flex; 
+  justify-content: flex-end; 
+  margin-top: 16px; 
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+    margin-top: 12px;
+    
+    :deep(.el-pagination) {
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+  }
+}
 
 .user-detail {
   .detail-avatar {
@@ -409,6 +453,13 @@ onMounted(loadUsers)
       font-size: 14px;
       color: var(--text-secondary);
       .info-label { color: var(--text-muted); min-width: 80px; }
+      
+      @media (max-width: 768px) {
+        flex-wrap: wrap;
+        font-size: 13px;
+        
+        .info-label { min-width: 70px; }
+      }
     }
   }
   .detail-keys {
@@ -420,6 +471,13 @@ onMounted(loadUsers)
       padding: 6px 0;
       .key-label { font-size: 13px; color: var(--text-muted); min-width: 90px; }
       .key-value { font-size: 12px; font-family: monospace; color: var(--text-secondary); word-break: break-all; }
+      
+      @media (max-width: 768px) {
+        flex-wrap: wrap;
+        
+        .key-label { min-width: 70px; }
+        .key-value { width: 100%; margin-left: 0; }
+      }
     }
   }
 }
@@ -441,5 +499,42 @@ onMounted(loadUsers)
 .credits-hint {
   font-size: 11px;
   color: var(--text-muted);
+}
+
+// 表格移动端适配
+:deep(.el-table) {
+  @media (max-width: 768px) {
+    font-size: 12px;
+    
+    .el-table__header th,
+    .el-table__body td {
+      padding: 8px 4px;
+    }
+    
+    .cell {
+      padding: 0 4px;
+    }
+    
+    .el-button--small {
+      padding: 4px 6px;
+      font-size: 11px;
+    }
+  }
+}
+
+// 弹窗移动端适配
+:deep(.el-dialog) {
+  @media (max-width: 768px) {
+    width: 95% !important;
+    margin: 10px auto;
+    
+    .el-dialog__body {
+      padding: 16px;
+    }
+    
+    .el-form-item {
+      margin-bottom: 14px;
+    }
+  }
 }
 </style>

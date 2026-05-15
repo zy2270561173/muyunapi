@@ -4,7 +4,10 @@ import { ref, computed } from 'vue'
 export const useDeviceStore = defineStore('device', () => {
   const userAgent = ref(typeof navigator !== 'undefined' ? navigator.userAgent : '')
 
-  // 仅基于 UA 识别移动设备
+  const detectDevice = () => {
+    userAgent.value = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+  }
+
   const isMobile = computed(() => {
     const ua = userAgent.value
     return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua)
@@ -18,6 +21,8 @@ export const useDeviceStore = defineStore('device', () => {
   })
 
   return {
+    userAgent,
+    detectDevice,
     isMobile,
     isIOS,
     isAndroid,

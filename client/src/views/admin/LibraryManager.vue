@@ -758,22 +758,67 @@ onMounted(() => { loadScripts(); loadCategories() })
 // ========== 脚本列表 ==========
 .script-list { display: flex; flex-direction: column; gap: 12px; }
 .script-card {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 16px 20px; gap: 16px; transition: border-color 0.2s;
+  display: flex; 
+  align-items: flex-start; 
+  justify-content: space-between;
+  flex-direction: column;
+  background: var(--bg-card); 
+  border: 1px solid var(--border); 
+  border-radius: var(--radius-sm);
+  padding: 16px 20px; 
+  gap: 12px; 
+  transition: border-color 0.2s;
   &:hover { border-color: var(--primary); }
+  
+  @media (min-width: 600px) {
+    flex-direction: row;
+    align-items: center;
+  }
 }
-.script-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.script-info { flex: 1; display: flex; flex-direction: column; gap: 6px; width: 100%; }
 .script-name {
-  display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px;
-  .el-icon { color: var(--primary); }
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+  font-weight: 600; 
+  font-size: 14px;
+  word-break: break-all;
+  .el-icon { color: var(--primary); flex-shrink: 0; }
+  
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
 }
 .script-meta {
-  display: flex; gap: 16px; font-size: 12px; color: var(--text-muted);
+  display: flex; 
+  flex-wrap: wrap;
+  gap: 8px 16px; 
+  font-size: 12px; 
+  color: var(--text-muted);
   span { display: flex; align-items: center; gap: 4px; }
+  
+  @media (max-width: 768px) {
+    font-size: 11px;
+    gap: 6px 12px;
+  }
 }
 .api-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.script-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.script-actions { 
+  display: flex; 
+  gap: 4px; 
+  flex-shrink: 0; 
+  flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: flex-start;
+    
+    .el-button {
+      flex: 1;
+      min-width: 80px;
+    }
+  }
+}
 
 // ========== 上传弹窗 ==========
 .script-uploader { width: 100%; }
@@ -802,7 +847,80 @@ onMounted(() => { loadScripts(); loadCategories() })
   padding: 16px;
   max-height: 500px;
   overflow: auto;
-  pre, code { margin: 0; font-family: 'Fira Code', Consolas, monospace; font-size: 13px; color: var(--code-text); white-space: pre; }
+  pre, code { 
+    margin: 0; 
+    font-family: 'Fira Code', Consolas, monospace; 
+    font-size: 13px; 
+    color: var(--code-text); 
+    white-space: pre; 
+    word-break: break-all;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 12px;
+    max-height: 350px;
+    
+    pre, code {
+      font-size: 11px;
+    }
+  }
+}
+
+// ========== 指南内容移动端适配 ==========
+.guide-content {
+  padding: 20px 24px;
+  background: var(--bg-card2);
+  
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+}
+
+.guide-section {
+  margin-bottom: 24px;
+  &:last-child { margin-bottom: 0; }
+  h4 {
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
+    margin: 0 0 10px; padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border);
+    
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+  p {
+    color: var(--text-secondary); font-size: 13px; margin: 0 0 8px; line-height: 1.6;
+  }
+  code {
+    background: rgba(233,147,18,0.1);
+    padding: 1px 6px; border-radius: 4px;
+    font-size: 12px; color: var(--primary);
+    font-family: 'Fira Code', Consolas, monospace;
+    
+    @media (max-width: 768px) {
+      font-size: 11px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 16px;
+  }
+}
+
+.note-list {
+  margin: 0; padding-left: 20px;
+  li {
+    color: var(--text-secondary); font-size: 13px;
+    line-height: 1.8; margin-bottom: 4px;
+    strong { color: var(--text-primary); }
+    
+    code {
+      background: rgba(233,147,18,0.1);
+      padding: 1px 6px; border-radius: 4px;
+      font-size: 11px; color: var(--primary);
+      font-family: 'Fira Code', Consolas, monospace;
+    }
+  }
 }
 </style>
 
