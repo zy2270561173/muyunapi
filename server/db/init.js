@@ -180,6 +180,8 @@ const defaultConfigs = [
   ['footer_time_enabled', '0', '页脚是否显示运行时间'],
   ['footer_time_style', 'running', '页脚运行时间风格(running/穿越了/稳定运行了)'],
   ['site_start_date', '2026-01-01', '站点上线日期(YYYY-MM-DD)'],
+  ['github_store_repo', 'zy2270561173/muyunapi-script', 'GitHub内置库仓库'],
+  ['github_proxy_url', 'https://gh-proxy.org/', 'GitHub加速代理地址'],
 ];
 
 const insertConfig = db.prepare(`INSERT OR IGNORE INTO configs (key, value, description) VALUES (?, ?, ?)`);
@@ -431,6 +433,30 @@ db.exec(`
   )
 `);
 console.log('[DB] github_sync_logs 表已创建/验证');
+
+// GitHub内置库商店表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS github_store_scripts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_owner TEXT NOT NULL,
+    repo_name TEXT NOT NULL,
+    script_name TEXT NOT NULL,
+    script_path TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    category_id INTEGER,
+    author TEXT DEFAULT '',
+    github_url TEXT DEFAULT '',
+    raw_url TEXT DEFAULT '',
+    version TEXT DEFAULT '1.0.0',
+    is_active INTEGER DEFAULT 1,
+    download_count INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(repo_owner, repo_name, script_name)
+  )
+`);
+console.log('[DB] github_store_scripts 表已创建/验证');
 
 // 时间线类型配置表
 db.exec(`
